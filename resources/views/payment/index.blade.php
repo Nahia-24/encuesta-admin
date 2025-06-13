@@ -30,10 +30,11 @@
         <!-- BEGIN: Botones Generales -->
         <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center sm:flex-nowrap">
             <x-base.menu>
-                <x-base.menu.button class="!box" as="x-base.button">
+                <a href="{{ route('reporte.pagos', $idEvent) }}" class="btn btn-primary !box">  
                     <span class="flex items-center justify-center">
                         <x-base.lucide class="h-4 w-4" icon="Plus" />Reporte Pagos
                     </span>
+                </a>
                 </x-base.menu.button>
                 <x-base.menu.items class="w-40">
                     <x-base.menu.item>

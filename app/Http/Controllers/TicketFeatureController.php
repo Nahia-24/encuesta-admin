@@ -18,9 +18,12 @@ class TicketFeatureController extends Controller
         $roles = Role::all();
         $query = TicketFeatures::query();
 
-        $featuredCategories = TicketFeatures::featured()->get();
-        $products = TicketType::whereIn('ticket_feature_id', $featuredCategories->pluck('id'))->get();
-        $products = Product::whereIn('ticket_feature_id', TicketFeatures::select('id')->featured())->get();
+        $featuredCategories = TicketFeatures::select('id', 'name')
+            ->where('featured', true)
+            ->get();
+        // Obtener los productos que pertenecen a las categorías destacadas
+        //$products = TicketType::whereIn('ticket_feature_id', $featuredCategories->pluck('id'))->get();
+        // $products = Product::whereIn('ticket_feature_id', TicketFeatures::select('id')->featured())->get();
 
         if (request('search')) {
             $query

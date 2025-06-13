@@ -140,7 +140,10 @@
                     >
                     <option></option>
                     @foreach ($roles as $rol)
-                        <option value="{{$rol->id}}" {{ old('role_id', $user->roles[0]->id) == $rol->id ? 'selected' : '' }}>{{ $rol->name }}</option>
+                        <option value="{{$rol->id}}"
+                            {{ old('role_id', $user->roles[0]->id ?? null) == $rol->id ? 'selected' : '' }}>
+                            {{ $rol->name }}
+                        </option>
                     @endforeach
                     </x-base.tom-select>
                     @error('role_id')

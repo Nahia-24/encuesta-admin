@@ -12,12 +12,9 @@ class LayoutController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      */
-    public function switch(Request $request): RedirectResponse
-    {
-        session([
-            'activeLayout' => $request->activeLayout
-        ]);
-
-        return redirect("/");
-    }
+    public function switch(string $activeLayout): RedirectResponse
+        {
+            session(['activeLayout' => $activeLayout]);
+            return redirect('/');
+        }   
 }

@@ -20,11 +20,11 @@
                             @foreach (['rubick', 'icewall', 'tinker', 'enigma'] as $themeKey => $theme)
                                 <div>
                                     <a
-                                        href="{{ route('theme-switcher', ['activeTheme' => $theme]) }}"
+                                        href="{{ route('theme.switch', ['activeTheme' => $theme]) }}"
                                         @class([
                                             'h-28 cursor-pointer bg-slate-50 box p-1 block',
                                             'border-2 border-theme-1/60' => $activeTheme == $theme,
-                                        ])
+                                       ])
                                     >
                                         <div class="image-fit h-full w-full overflow-hidden rounded-md">
                                             <img
@@ -49,7 +49,7 @@
                             @foreach (['side-menu', 'simple-menu', 'top-menu'] as $layoutKey => $layout)
                                 <div>
                                     <a
-                                        href="{{ route('layout-switcher', ['activeLayout' => $layout]) }}"
+                                        href="{{ route('layout.switcher', ['activeLayout' => $layout]) }}"
                                         @class([
                                             'h-24 cursor-pointer bg-slate-50 box p-1 block',
                                             'border-2 border-theme-1/60' => $activeLayout == $layout,

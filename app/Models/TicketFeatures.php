@@ -14,6 +14,7 @@ class TicketFeatures extends Model
     protected $fillable = [
         'name',
         'consumable',
+        'featured',
     ];
 
     public function ticketTypes()
@@ -24,6 +25,11 @@ class TicketFeatures extends Model
     public function ticketTypes2()
     {
         return $this->belongsToMany(TicketType::class, 'ticket_type_feature');
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('featured', true);
     }
 
 }

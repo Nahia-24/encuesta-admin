@@ -256,7 +256,11 @@
             <x-base.menu.header class="font-normal">
                 <div class="font-medium">{{ Auth::user()->name }} {{ Auth::user()->lastname }}</div>
                 <div class="mt-0.5 text-xs text-white/70 dark:text-slate-500">
-                    {{ Auth::user()->roles[0]->name }}
+                    @if(Auth::user()->roles->isNotEmpty())
+                        {{ Auth::user()->roles[0]->name }}
+                    @else
+                        Sin rol
+                    @endif
                 </div>
             </x-base.menu.header>
             <x-base.menu.divider class="bg-white/[0.08]" />

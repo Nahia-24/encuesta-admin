@@ -74,7 +74,15 @@
                                     <li>
                                         <a
                                             class="{{ $secondLevelActiveIndex == $subMenuKey ? 'menu menu--active' : 'menu' }}"
-                                            href="{{ isset($subMenu['route_name']) ? route($subMenu['route_name'], isset($subMenu['params']) ? $subMenu['params'] : []) : 'javascript:;' }}"
+                                            @php
+                                                $routeExists = isset($subMenu['route_name']) && Route::has($subMenu['route_name']);
+                                            @endphp
+
+                                            <a
+                                                class="{{ $secondLevelActiveIndex == $subMenuKey ? 'menu menu--active' : 'menu' }}"
+                                                href="{{ $routeExists ? route($subMenu['route_name'], $subMenu['params'] ?? []) : 'javascript:;' }}"
+                                            >
+
                                         >
                                             <div class="menu__icon">
                                                 <x-base.lucide icon="{{ $subMenu['icon'] }}" />

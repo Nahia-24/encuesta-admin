@@ -1,23 +1,35 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Session;
 
 class ThemeController extends Controller
 {
-    /**
-     * Show specified view.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     */
-    public function switch(Request $request): RedirectResponse
+    public function switch($activeTheme)
     {
-        session([
-            'activeTheme' => $request->activeTheme
-        ]);
+        // Guarda el tema en sesión (puedes adaptarlo)
+        Session::put('activeTheme', $activeTheme);
 
-        return redirect("/");
+        // Redirecciona a la página anterior o a /home
+        return redirect()->back();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

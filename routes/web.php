@@ -33,13 +33,16 @@ use App\Http\Controllers\TicketFeatureController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\PaypalController;
 
-Route::get('theme-switcher/{activeTheme}', [ThemeController::class, 'switch'])->name('theme-switcher');
-Route::get('layout-switcher/{activeLayout}', [LayoutController::class, 'switch'])->name('layout-switcher');
+Route::get('/theme-switch/{activeTheme}', [ThemeController::class, 'switch'])->name('theme.switch');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::get('login', [PageController::class, 'login'])->name('login');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/RegisterUsers', [UserController::class, 'RegisterUsers'])->name('users.register');
-Route::post('/RegisterUsers/create', [UserController::class, 'RegisterUsersStore'])->name('users.registerStore');
+Route::post('/RegisterUsers', [UserController::class, 'RegisterUsersStore'])->name('users.registerStore');
+
+
+Route::get('layout-switcher/{activeLayout}', [LayoutController::class, 'switch'])->name('layout.switcher');
+
 Route::get('/resetPassword', [UserController::class, 'resetPasswordIndex'])->name('users.resetPasswordIndex');
 Route::post('/resetPassword', [UserController::class, 'resetPassword'])->name('users.resetPassword');
 // Mostrar formulario para solicitar enlace de restablecimiento de contraseña
@@ -98,9 +101,15 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     //CRUD PDF
     Route::get('/pdf/{id}',[PDFController::class,'buildPDF'])->name('pdf');
-    Route::get('/checkout/',[PaypalController::class,'Paypal'])->name('checkout.paypal');
+    Route::get('/pdf/{id}/download', [PDFController::class, 'downloadPDF'])->name('pdf.download');
 
-
+    //CRUD PAYPAL
+    Route::get('/paypal/{eventAssistantId}', [PaypalController::class, 'Paypal'])->name('paypal.index');
+    Route::get('/paypal/create', [PaypalController::class, 'create'])->name('paypal.create');
+    Route::post('/paypal/create', [PaypalController::class, 'store'])->name('paypal.store');
+    Route::get('/paypal/update/{id}', [PaypalController::class, 'edit'])->name('paypal.edit');
+    Route::post('/paypal/update', [PaypalController::class, 'update'])->name('paypal.update');
+    Route::get('/paypal/delete/{id}', [PaypalController::class, 'delete'])->name('paypal.delete');
 
     //CRUD AJAX
     Route::get('input-form', [AjaxController::class, 'index']);

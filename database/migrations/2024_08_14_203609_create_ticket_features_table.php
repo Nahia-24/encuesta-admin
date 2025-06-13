@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Crear la tabla ticket_features con la columna 'featured'
         Schema::create('ticket_features', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->boolean('featured')->default(false); // ✅ Aquí está tu campo
             $table->timestamps();
         });
 
-        // Crear tabla intermedia para la relación many-to-many entre ticket_types y ticket_features
+        // Crear tabla intermedia para la relación many-to-many entre ticket_type y ticket_features
         Schema::create('ticket_type_feature', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('ticket_type_id');
@@ -38,3 +40,24 @@ return new class extends Migration
         Schema::dropIfExists('ticket_features');
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

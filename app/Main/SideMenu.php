@@ -46,9 +46,11 @@ class SideMenu
                 'icon' => 'file-text',
                 'title' => 'Pagos',
                 'sub_menu' => [
+
                     'checkout.paypal' => [
                         'icon' => 'file-text',
-                        'route_name' => 'checkout.paypal',
+                        'route_name' => 'paypal.index',
+                        'params' => ['eventAssistantId' => 1],
                         'title' => 'Paypal'
                     ]
                 ]

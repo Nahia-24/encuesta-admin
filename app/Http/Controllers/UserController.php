@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use ill;
 
 class UserController extends Controller
 {
@@ -22,8 +21,8 @@ class UserController extends Controller
         $query = User::with('roles')
         ->whereDoesntHave('roles', function ($q) {
             $q->where('name', 'assistant');
-        })
-        ;
+        });
+        // Filtrar por estado
         if ($request->has('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -31,6 +30,7 @@ class UserController extends Controller
                 ->orWhere('lastname', 'like', "%{$search}%")
                 ->orWhere('phone', 'like', "%{$search}%")
                 ->orWhereHas('roles', function ($q) use ($search) {
+
                     $q->where('name', 'like', "%{$search}%");
                 });
             });
@@ -42,7 +42,7 @@ class UserController extends Controller
 
 
     public function create(){
-        $roles = Role::all();
+        $roles = Role::whereIn('name', ['organizer', 'admin', 'assistant'])->get();
         $departments = Departament::all(); // Obtener los departamentos
 
         return view('users.create', compact(['roles', 'departments']));
