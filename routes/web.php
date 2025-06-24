@@ -145,6 +145,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/event/generatePublicLink/{id}', [EventController::class, 'generatePublicLink'])->name('event.generatePublicLink');
     Route::get('/events/{id}/set-registration-parameters', [EventController::class, 'setRegistrationParameters'])->name('events.setRegistrationParameters');
     Route::post('/events/{id}/store-registration-parameters', [EventController::class, 'storeRegistrationParameters'])->name('events.storeRegistrationParameters');
+    Route::get('/events/{idEvent}/payment-report', [EventController::class, 'paymentReport'])->name('events.payment-report');
+    Route::get('/events/{idEvent}/export-payments', [EventController::class, 'exportPayments'])->name('events.export-payments');
 
     //ASISTENTS TO EVENT
     Route::get('/assistants/{idEvent}', [EventAssistantController::class, 'index'])->name('eventAssistant.index');
@@ -179,6 +181,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     //Payloads
     Route::get('/paymentList/{idEvent}', [PaymentController::class, 'index'])->name('payments.index');
+    // Rutas para pagos
+    Route::get('/payments/create/{assistantId}', [PaymentController::class, 'create'])
+        ->name('payments.create');
+
+    Route::post('/payments/store', [PaymentController::class, 'store'])
+        ->name('payments.store');
     Route::get('/payment/{id}', [PaymentController::class, 'generatePDF'])->name('payments.generatePDF');
     Route::get('/event-assistant/payment/{idEvent}/export-excel', [PaymentController::class, 'exportExcel'])->name('payment.exportExcel');
     Route::get('/event-assistant/paymentStatus/{idEvent}/export-excel', [PaymentController::class, 'exportExcelPaymentStatus'])->name('paymentStatus.exportExcel');

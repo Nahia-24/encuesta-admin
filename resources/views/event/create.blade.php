@@ -133,7 +133,7 @@
                         @endphp
 
                         @foreach ($ticketErrors as $key => $messages)
-                            @if (Str::startsWith($key, 'ticketTypes.') && Str::contains($key, 'features'))
+                            @if (Str::startsWith($key, 'ticketTypes.') && Str::contains($key, 'characteristics'))
                                 @foreach ($messages as $message)
                                     <div class="text-red-500 text-sm mt-1">
                                         {{ $message }}
@@ -256,7 +256,7 @@
     <script>
         let fieldIndex = 0;
         let ticketTypeIndex = 0;
-        const featureOptions = @json($characteristics);
+        const characteristicOptions = @json($characteristics);
 
         function addDynamicField() {
             const container = document.getElementById('dynamic-fields-container');
@@ -292,85 +292,87 @@
             document.getElementById(`${fieldId}_wrapper`).remove();
         }
 
+
         function addTicketType() {
             const container = document.getElementById('ticket-types-container');
             const ticketTypeId = `ticket_type_${ticketTypeIndex}`;
 
-            // Construir el HTML de las opciones del select desde JS
-            const featureOptionsHtml = featureOptions.map(feature => {
-                const label = `${feature.name}${feature.consumable ? ' - (CONSUMIBLE)' : ''}`;
-                return `<option value="${feature.id}">${label}</option>`;
+            // Construir opciones de características
+            const characteristicOptionsHtml = characteristicOptions.map(characteristic => {
+                return `<option value="${characteristic.id}">${characteristic.name}</option>`;
             }).join('');
 
-            // HTML de los campos dinámicos del tipo de entrada
             const fieldHtml = `
-<div id="${ticketTypeId}_wrapper" class="grid grid-cols-12 gap-4 items-end mt-3">
-    <div class="col-span-12 md:col-span-3">
-        <label for="${ticketTypeId}_name" class="form-label">Nombre del Tipo</label>
-        <input
-            id="${ticketTypeId}_name"
-            name="ticketTypes[${ticketTypeIndex}][name]"
-            type="text"
-            placeholder="Ej: Entrada VIP"
-            class="form-control w-full"
-        />
-    </div>
-    <div class="col-span-6 md:col-span-2">
-        <label for="${ticketTypeId}_capacity" class="form-label">Capacidad</label>
-        <input
-            id="${ticketTypeId}_capacity"
-            name="ticketTypes[${ticketTypeIndex}][capacity]"
-            type="number"
-            placeholder="100"
-            class="form-control w-full"
-        />
-    </div>
-    <div class="col-span-6 md:col-span-2">
-        <label for="${ticketTypeId}_price" class="form-label">Precio</label>
-        <input
-            id="${ticketTypeId}_price"
-            name="ticketTypes[${ticketTypeIndex}][price]"
-            type="number"
-            step="0.01"
-            placeholder="25000"
-            class="form-control w-full"
-        />
-    </div>
-    <div class="col-span-11 md:col-span-4">
-        <label for="${ticketTypeId}_features" class="form-label">Características</label>
-        <select
-            id="${ticketTypeId}_features"
-            name="ticketTypes[${ticketTypeIndex}][characteristics][]"
-            multiple
-            class="tom-select w-full"
+    <div id="${ticketTypeId}_wrapper" class="grid grid-cols-12 gap-4 items-end mt-3">
+        <div class="col-span-12 md:col-span-3">
+            <label for="${ticketTypeId}_name" class="form-label">Nombre del Tipo</label>
+            <input
+                id="${ticketTypeId}_name"
+                name="ticketTypes[${ticketTypeIndex}][name]"
+                type="text"
+                placeholder="Ej: Entrada VIP"
+                class="form-control w-full"
+                required
+            />
+        </div>
+        <div class="col-span-6 md:col-span-2">
+            <label for="${ticketTypeId}_capacity" class="form-label">Capacidad</label>
+            <input
+                id="${ticketTypeId}_capacity"
+                name="ticketTypes[${ticketTypeIndex}][capacity]"
+                type="number"
+                placeholder="100"
+                class="form-control w-full"
+                min="1"
+                required
+            />
+        </div>
+        <div class="col-span-6 md:col-span-2">
+            <label for="${ticketTypeId}_price" class="form-label">Precio</label>
+            <input
+                id="${ticketTypeId}_price"
+                name="ticketTypes[${ticketTypeIndex}][price]"
+                type="number"
+                step="0.01"
+                placeholder="25000"
+                class="form-control w-full"
+                min="0"
+                required
+            />
+        </div>
+        <div class="col-span-11 md:col-span-4">
+            <label for="${ticketTypeId}_characteristics" class="form-label">Características</label>
+            <select
+                id="${ticketTypeId}_characteristics"
+                name="ticketTypes[${ticketTypeIndex}][characteristics][]"
+                multiple
+                class="tom-select w-full"
+            >
+                ${characteristicOptionsHtml}
+            </select>
+        </div>
+        <button
+            type="button"
+            onclick="removeTicketType('${ticketTypeId}')"
+            class="text-red-500 hover:text-red-700 mt-[-4px]"
+            title="Eliminar"
         >
-            ${featureOptionsHtml}
-        </select>
-    </div>
-    <button
-        type="button"
-        onclick="removeTicketType('${ticketTypeId}')"
-        class="text-red-500 hover:text-red-700 mt-[-4px]"
-        title="Eliminar"
-    >
-        <svg xmlns="http://www.w3.org/2000/svg"
-            class="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 3h6a1 1 0 011 1v1H8V4a1 1 0 011-1z" />
-        </svg>
-    </button> 
-</div>
-`;
-
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 3h6a1 1 0 011 1v1H8V4a1 1 0 011-1z" />
+            </svg>
+        </button> 
+    </div>`;
 
             container.insertAdjacentHTML('beforeend', fieldHtml);
 
-            // Inicializa Tom Select en el nuevo select
-            new TomSelect(`#${ticketTypeId}_features`, {
+            // Inicializa Tom Select
+            new TomSelect(`#${ticketTypeId}_characteristics`, {
                 plugins: ['remove_button'],
                 maxItems: null,
             });

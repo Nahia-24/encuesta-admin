@@ -196,17 +196,21 @@
                                         value="{{ old('ticketTypes.' . $index . '.price', $ticket->price) }}" />
 
                                     @php
-                                        $selectedCharacteristics =
-                                            old("ticketTypes.{$index}.characteristics") ??
-                                            (json_decode($ticket->features ?? '[]') ?? []);
+                                        $selectedFromOld = old("ticketTypes.{$index}.characteristics", []);
+                                        $selectedFromDB = is_array($ticket->characteristics)
+                                            ? $ticket->characteristics
+                                            : $ticket->characteristics->pluck('id')->toArray();
+
+                                        $selectedCharacteristics = !empty($selectedFromOld)
+                                            ? $selectedFromOld
+                                            : $selectedFromDB;
                                     @endphp
 
                                     <x-base.tom-select name="ticketTypes[{{ $index }}][characteristics][]"
-                                        placeholder="Características" class="form-control w-1/3 mr-2" multiple>
-                                        @foreach ($features as $feature)
-                                            <option value="{{ $feature->id }}"
-                                                {{ in_array($feature->id, $selectedCharacteristics) ? 'selected' : '' }}>
-                                                {{ $feature->name }}{{ $feature->consumable ? ' - (CONSUMIBLE)' : '' }}
+                                        placeholder="Características" multiple>
+                                        @foreach ($characteristics as $characteristic)
+                                            <option value="{{ $characteristic->id }}" @selected(in_array($characteristic->id, (array) $selectedCharacteristics))>
+                                                {{ $characteristic->name }}
                                             </option>
                                         @endforeach
                                     </x-base.tom-select>

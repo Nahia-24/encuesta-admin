@@ -30,8 +30,8 @@ class PaymentController extends Controller
                 // Buscar en la relación 'user'
                 $q->whereHas('user', function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
-                          ->orWhere('email', 'like', "%{$search}%")
-                          ->orWhere('phone', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
                 });
 
                 // Buscar en la relación 'ticketType'
@@ -54,12 +54,12 @@ class PaymentController extends Controller
                 } elseif (strtolower($search) === 'no pagado') {
                     $q->orWhere(function ($q) {
                         $q->where('is_paid', false)
-                          ->whereDoesntHave('payments'); // No hay pagos registrados
+                            ->whereDoesntHave('payments'); // No hay pagos registrados
                     });
                 } elseif (strtolower($search) === 'pendiente') {
                     $q->orWhere(function ($q) {
                         $q->where('is_paid', false)
-                          ->whereHas('payments'); // Tiene al menos un pago registrado
+                            ->whereHas('payments'); // Tiene al menos un pago registrado
                     });
                 }
             });
@@ -116,7 +116,7 @@ class PaymentController extends Controller
         // Generar la vista en formato PDF
         $pdf = PDF::loadView('pdf.payment', compact('payment'));
 
-        return $pdf->stream('detalle_pago_'.$payment->payer_name.'.pdf');
+        return $pdf->stream('detalle_pago_' . $payment->payer_name . '.pdf');
         // return $pdf->download('payment_details_' . $payment->id . '.pdf');
     }
 
@@ -155,12 +155,12 @@ class PaymentController extends Controller
             $messages = $import->getMessages();
 
             return redirect()->back()
-                            ->with('success', 'Asistentes pagados exitosamente.')
-                            ->with('importedUsers', $importedUsers)
-                            ->with('messages', $messages);
+                ->with('success', 'Asistentes pagados exitosamente.')
+                ->with('importedUsers', $importedUsers)
+                ->with('messages', $messages);
         } catch (\Exception $e) {
             return redirect()->back()
-                            ->with('error', 'Hubo un error al procesar el archivo: ' . $e->getMessage());
+                ->with('error', 'Hubo un error al procesar el archivo: ' . $e->getMessage());
         }
     }
 
@@ -174,7 +174,7 @@ class PaymentController extends Controller
         // Exportar el archivo Excel usando los datos proporcionados
         return Excel::download(
             new PaymentExport($idEvent, $selectedFields, $additionalParameters, $search),
-            'pagos_de_asistentes_del_evento_'.$event->name.'_'.date('d-m-Y').'.xlsx'
+            'pagos_de_asistentes_del_evento_' . $event->name . '_' . date('d-m-Y') . '.xlsx'
         );
     }
 
@@ -188,8 +188,47 @@ class PaymentController extends Controller
         // Exportar el archivo Excel usando los datos proporcionados
         return Excel::download(
             new PaymentExport($idEvent, $selectedFields, $additionalParameters, $search, $paymentStatus = true),
-            'pagos_de_asistentes_del_evento_'.$event->name.'_'.date('d-m-Y').'.xlsx'
+            'pagos_de_asistentes_del_evento_' . $event->name . '_' . date('d-m-Y') . '.xlsx'
         );
     }
 
+    public function create($assistantId)
+    {
+        $assistant = EventAssistant::with(['user', 'event', 'ticketType'])->findOrFail($assistantId);
+
+        return view('payments.create', [
+            'assistant' => $assistant,
+            'paymentMethods' => ['Efectivo', 'Transferencia', 'Tarjeta', 'Otro'] // Ejemplo de métodos de pago
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'event_assistant_id' => 'required|exists:event_assistants,id',
+            'amount' => 'required|numeric|min:1',
+            'payment_method' => 'required|string',
+            'payment_date' => 'required|date',
+            'reference' => 'nullable|string',
+            'notes' => 'nullable|string'
+        ]);
+
+        try {
+            $payment = Payment::create($validated);
+
+            // Actualizar estado de pago del asistente si es necesario
+            $assistant = EventAssistant::find($validated['event_assistant_id']);
+            if (!$assistant->is_paid) {
+                $totalPagado = $assistant->payments->sum('amount');
+                if ($totalPagado >= $assistant->ticketType->price) {
+                    $assistant->update(['is_paid' => true]);
+                }
+            }
+
+            return redirect()->route('payments.index', $assistant->event_id)
+                ->with('success', 'Pago registrado exitosamente');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al registrar el pago: ' . $e->getMessage());
+        }
+    }
 }

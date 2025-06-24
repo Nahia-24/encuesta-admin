@@ -14,6 +14,7 @@ class TicketCharacteristic extends Model
 
     public function ticketTypes()
     {
-        return $this->belongsToMany(TicketType::class, 'characteristic_ticket_type', 'ticket_characteristic_id', 'ticket_type_id');
+        return $this->belongsToMany(TicketType::class, 'characteristic_ticket_type')
+                ->withTimestamps();
     }
 }

@@ -7,10 +7,13 @@ use App\Models\Coupon;
 use App\Models\Departament;
 use App\Models\Event;
 use App\Models\EventAssistant;
+use App\Models\Payment; // Modelo de pagos existente
+use App\Exports\PaymentExport; // Exportación existente
 use App\Models\TicketFeatures;
 use App\Models\TicketType;
 use App\Models\TicketCharacteristic;
 use App\Models\User;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Models\UserEventParameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,10 +47,9 @@ class EventController extends Controller
     public function create()
     {
         $departments = Departament::all();
-        $features = TicketFeatures::all();
         $characteristics = TicketCharacteristic::all();
 
-        return view('event.create', compact('departments', 'features', 'characteristics'));
+        return view('event.create', compact('departments', 'characteristics'));
     }
 
     public function store(Request $request)
@@ -120,22 +122,34 @@ class EventController extends Controller
                     'price' => $ticketTypeData['price'],
                 ]);
 
-                // Asignar características
-                $ticketType->features()->sync($ticketTypeData['features']);
+                // Sincronizar características de manera segura
+                $this->syncTicketCharacteristics($ticketType, $ticketTypeData['characteristics']);
             }
         }
 
         return redirect()->route('event.index')->with('success', 'Evento creado exitosamente.');
     }
 
+    // Nuevo método helper para sincronización segura
+    protected function syncTicketCharacteristics(TicketType $ticketType, array $characteristicIds)
+    {
+        $existingCharacteristics = TicketCharacteristic::whereIn('id', $characteristicIds)->pluck('id');
+
+        if ($existingCharacteristics->count() !== count($characteristicIds)) {
+            throw new \Exception("Una o más características no existen en la base de datos");
+        }
+
+        $ticketType->characteristics()->sync($existingCharacteristics);
+    }
+
+
     public function edit($id)
     {
         $event = Event::with('ticketTypes.characteristics')->findOrFail($id);
         $departments = Departament::all();
-        $features = TicketFeatures::all();
-        $characteristics = TicketCharacteristic::all(); // ✅ Agregado
+        $characteristics = TicketCharacteristic::select('id', 'name')->get();
 
-        return view('event.update', compact('event', 'departments', 'features', 'characteristics'));
+        return view('event.update', compact('event', 'departments', 'characteristics'));
     }
 
     public function update(Request $request)
@@ -217,14 +231,72 @@ class EventController extends Controller
                     ]
                 );
 
-                // Sincronizar características
-                $ticketType->characteristics()->sync($ticketTypeData['characteristics'] ?? []);
+                // Sincronizar características de manera segura
+                if (!empty($ticketTypeData['characteristics'])) {
+                    $this->syncTicketCharacteristics($ticketType, $ticketTypeData['characteristics']);
+                }
             }
 
             return redirect()->route('event.index')->with('success', 'Evento actualizado exitosamente.');
         } catch (\Exception $e) {
-            return redirect()->route('event.edit', $request->id)->with('error', $e->getMessage());
+            return redirect()->route('event.edit', $request->id)
+                    ->with('error', $e->getMessage())
+                    ->withInput();
+          
         }
+    }
+
+    // App/Http/Controllers/EventController.php
+    public function paymentReport($idEvent)
+    {
+        $event = Event::findOrFail($idEvent);
+
+        // Obtener los asistentes con paginación
+        $asistentes = EventAssistant::where('event_id', $idEvent)->paginate(10);
+
+        // Calcular métricas
+        $recaudoTotal = Payment::whereHas('eventAssistant', function ($q) use ($idEvent) {
+            $q->where('event_id', $idEvent);
+        })->sum('amount');
+
+        $asistentesPagos = EventAssistant::where('event_id', $idEvent)
+            ->whereHas('payments')
+            ->count();
+
+        $asistentesSinEntrada = EventAssistant::where('event_id', $idEvent)
+            ->where('has_entered', false)
+            ->count();
+
+        $cuponesRedimidos = Coupon::where('event_id', $idEvent)
+            ->whereNotNull('event_assistant_id')
+            ->count();
+
+        $cuponesNoRedimidos = Coupon::where('event_id', $idEvent)
+            ->whereNull('event_assistant_id')
+            ->count();
+
+        return view('payment.index', compact(
+            'asistentes',
+            'idEvent',
+            'event',
+            'recaudoTotal',
+            'asistentesPagos',
+            'asistentesSinEntrada',
+            'cuponesRedimidos',
+            'cuponesNoRedimidos'
+        ));
+    }
+    public function exportPayments(Request $request, $idEvent)
+    {
+        // Mover aquí la lógica del método exportExcel() de PaymentController
+        $event = Event::find($idEvent);
+        $search = $request->input('search');
+        $selectedFields = json_decode($event->registration_parameters, true) ?? [];
+
+        return Excel::download(
+            new PaymentExport($idEvent, $selectedFields, $search),
+            'reporte_pagos_' . $event->name . '.xlsx'
+        );
     }
 
     public function generatePublicLink($id)

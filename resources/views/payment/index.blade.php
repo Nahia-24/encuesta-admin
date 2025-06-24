@@ -11,8 +11,15 @@
             {{ session('error') }}
         </x-base.alert>
     @endif
-    <h2 class="intro-y mt-10 text-lg font-medium">RECAUDOS</h2>
-    <div class="">
+    
+    <div class="flex justify-between items-center mt-10">
+        <h2 class="text-lg font-medium">Recaudos</h2>
+        <a href="{{ route('event.index') }}">
+            <x-base.button class="shadow-md h-9 px-8 text-sm" variant="primary">
+                Volver a Eventos
+            </x-base.button>
+        </a>
+    </div>
 
         <!-- BEGIN: DashBoard -->
         <div class="mt-5">
@@ -30,11 +37,11 @@
         <!-- BEGIN: Botones Generales -->
         <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center sm:flex-nowrap">
             <x-base.menu>
-                <a href="{{ route('reporte.pagos', $idEvent) }}" class="btn btn-primary !box">
+                <x-base.menu.button class="!box" as="x-base.button">
                     <span class="flex items-center justify-center">
-                        <x-base.lucide class="h-4 w-4" icon="Plus" />Reporte Pagos
+                        <x-base.lucide class="h-4 w-4" icon="Plus" />
+                        Reporte Pagos
                     </span>
-                </a>
                 </x-base.menu.button>
                 <x-base.menu.items class="w-40">
                     <x-base.menu.item>
@@ -44,7 +51,7 @@
                                 'search' => request()->input('search'),
                                 'additionalParameters' => request()->input('additionalParameters', []),
                             ]) }}">
-                            <x-base.lucide class="mr-2 h-4 w-4" icon="FileText" /> Pagos Realizados (EXCEL)
+                            <x-base.lucide class="mr-2 h-4 w-4" icon="FileText" /> Pagos Realizados (EXCEL
                         </a>
                         <a class="mr-3" target="_blank"
                             href="{{ route('paymentStatus.exportExcel', [
@@ -54,6 +61,7 @@
                             ]) }}">
                             <x-base.lucide class="mr-2 h-4 w-4" icon="FileText" /> Status Pago (EXCEL)
                         </a>
+
                     </x-base.menu.item>
                 </x-base.menu.items>
             </x-base.menu>
@@ -71,158 +79,131 @@
                 </form>
             </div>
         </div>
-        <!-- BEGIN: Data List -->
+        <!-- BEGIN: Payment Table -->
         @php
-            // Obtener los parámetros guardados en registration_parameters
             $selectedFields = json_decode($event->registration_parameters, true) ?? [];
         @endphp
-        <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+        <div class="intro-y col-span-12 bg-white dark:bg-darkmode-700 rounded-lg shadow-lg p-5 mt-5">
             <div class="overflow-x-auto">
-                <x-base.table class="-mt-2 border-separate border-spacing-y-[10px]">
+                <x-base.table class="-mt-2 border-separate border-spacing-y-2 min-w-full">
                     <x-base.table.thead>
                         <x-base.table.tr>
-                            <!-- Carga dinámica de columnas -->
+                            <!-- Columnas dinámicas -->
                             @foreach (['name', 'email', 'document_number'] as $field)
                                 @if (in_array($field, $selectedFields))
-                                    <x-base.table.th class="whitespace-nowrap border-b-0 text-center">
+                                    <x-base.table.th
+                                        class="border-b-0 whitespace-nowrap text-center text-slate-500 uppercase tracking-wider font-bold">
                                         {{ config("traductorColumnasUsers.$field", ucfirst(str_replace('_', ' ', $field))) }}
                                     </x-base.table.th>
                                 @endif
                             @endforeach
 
-                            <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Tipo de
-                                Boleta</x-base.table.th>
-                            <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Estatus de
-                                pago</x-base.table.th>
-                            <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Entrada</x-base.table.th>
-                            <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Consumos</x-base.table.th>
-                            <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Acciones</x-base.table.th>
+                            <!-- Columnas fijas para pagos -->
+                            <x-base.table.th
+                                class="border-b-0 whitespace-nowrap text-center text-slate-500 uppercase tracking-wider font-bold">
+                                Tipo de Boleta
+                            </x-base.table.th>
+                            <x-base.table.th
+                                class="border-b-0 whitespace-nowrap text-center text-slate-500 uppercase tracking-wider font-bold">
+                                Estatus de Pago
+                            </x-base.table.th>
+                            <x-base.table.th
+                                class="border-b-0 whitespace-nowrap text-center text-slate-500 uppercase tracking-wider font-bold">
+                                Monto Pagado
+                            </x-base.table.th>
+                            <x-base.table.th
+                                class="border-b-0 whitespace-nowrap text-center text-slate-500 uppercase tracking-wider font-bold">
+                                Entrada
+                            </x-base.table.th>
+                            <x-base.table.th
+                                class="border-b-0 whitespace-nowrap text-center text-slate-500 uppercase tracking-wider font-bold">
+                                Acciones
+                            </x-base.table.th>
                         </x-base.table.tr>
                     </x-base.table.thead>
                     <x-base.table.tbody>
                         @foreach ($asistentes as $asistente)
-                            <x-base.table.tr class="intro-x">
-                                <!-- Carga dinámica de contenido de las filas -->
+                            <x-base.table.tr
+                                class="intro-x bg-white dark:bg-darkmode-600 shadow-md rounded-lg hover:shadow-xl transition-shadow duration-200">
+                                <!-- Datos dinámicos -->
                                 @foreach (['name', 'email', 'document_number'] as $field)
                                     @if (in_array($field, $selectedFields))
-                                        <x-base.table.td class="box text-center">
+                                        <x-base.table.td class="text-center align-middle p-4 border-0">
                                             {{ $asistente->user->$field }}
                                         </x-base.table.td>
                                     @endif
                                 @endforeach
-                                <!-- Columna de acciones -->
-                                <x-base.table.td
-                                    class="box text-center">{{ $asistente->ticketType?->name ?? 'SIN REGISTRO' }}</x-base.table.td>
-                                <x-base.table.td class="box text-center">
+
+                                <!-- Información de pago -->
+                                <x-base.table.td class="text-center align-middle p-4 border-0">
+                                    {{ $asistente->ticketType?->name ?? 'SIN REGISTRO' }}
+                                </x-base.table.td>
+
+                                <x-base.table.td class="text-center align-middle p-4 border-0">
                                     @if ($asistente->is_paid)
                                         @php
-                                            // Buscar los pagos para el asistente del evento
                                             $payments = \App\Models\Payment::where(
                                                 'event_assistant_id',
                                                 $asistente->id,
                                             )->get();
-
-                                            // Si no existen pagos, buscar un cupón consumido
                                             $coupon = $payments->isEmpty()
                                                 ? \App\Models\Coupon::where('event_assistant_id', $asistente->id)
                                                     ->where('is_consumed', true)
                                                     ->first()
                                                 : null;
-
-                                            // Formatear los montos sin decimales y separarlos por guiones
-                                            $formattedPayments = $payments
-                                                ->map(function ($payment) {
-                                                    return number_format($payment->amount, 0, '', '.'); // Eliminar los decimales .00
-                                                })
-                                                ->implode(' - ');
                                         @endphp
 
                                         @if ($payments->isNotEmpty())
-                                            <!-- Mostrar el monto pagado si existen pagos -->
-                                            <div role="alert"
-                                                class="alert rounded-md bg-success text-slate-900 dark:border-success">
-                                                Pagado - Monto: {{ $formattedPayments }}
+                                            <div class="alert bg-success text-slate-900 p-2 rounded-md">
+                                                Pagado
                                             </div>
-                                        @elseif ($coupon)
-                                            <!-- Mostrar el código del cupón si existe uno consumido -->
-                                            <div role="alert"
-                                                class="alert rounded-md bg-success text-slate-900 dark:border-success">
-                                                Pagado con Cupón - Código: {{ $coupon->numeric_code }}
+                                        @elseif($coupon)
+                                            <div class="alert bg-success text-slate-900 p-2 rounded-md">
+                                                Cupón: {{ $coupon->numeric_code }}
                                             </div>
                                         @else
-                                            <!-- Si no hay pagos ni cupón, solo mostrar pagado sin detalles -->
-                                            <div role="alert"
-                                                class="alert rounded-md bg-success text-slate-900 dark:border-success">
-                                                Pagado (sin registro pago o cupón)
+                                            <div class="alert bg-success text-slate-900 p-2 rounded-md">
+                                                Pagado
                                             </div>
                                         @endif
                                     @else
-                                        <!-- Lógica para cuando no ha sido pagado -->
-                                        @if ($asistente->totalPayments() == 0)
-                                            <div role="alert"
-                                                class="alert rounded-md bg-danger text-white border border-danger dark:border-danger p-1">
-                                                No Pagado
-                                            </div>
-                                        @endif
-
-                                        @php
-                                            // Buscar los pagos para el asistente del evento
-                                            $payments = \App\Models\Payment::where(
-                                                'event_assistant_id',
-                                                $asistente->id,
-                                            )->get();
-
-                                            // Formatear los montos sin decimales y separarlos por guiones
-                                            $formattedPayments = $payments
-                                                ->map(function ($payment) {
-                                                    return number_format($payment->amount, 0, '', '.');
-                                                })
-                                                ->implode(' - ');
-                                        @endphp
-                                        <div role="alert"
-                                            class="alert rounded-md bg-warning text-slate-900 dark:border-warning p-1">
-                                            Pendiente - Monto: {{ $formattedPayments }}
+                                        <div
+                                            class="alert bg-{{ $asistente->totalPayments() > 0 ? 'warning' : 'danger' }} text-slate-900 p-2 rounded-md">
+                                            {{ $asistente->totalPayments() > 0 ? 'Pendiente' : 'No Pagado' }}
                                         </div>
                                     @endif
                                 </x-base.table.td>
-                                <x-base.table.td class="box text-center">
-                                    @if ($asistente->has_entered)
-                                        <div role="alert"
-                                            class="alert rounded-md bg-success text-slate-900 dark:border-success p-1">
-                                            Entrada
-                                        </div>
-                                    @else
-                                        <div role="alert"
-                                            class="alert rounded-md bg-warning text-slate-900 dark:border-warning p-1">
-                                            No Entrada
-                                        </div>
-                                    @endif
-                                </x-base.table.td>
-                                <x-base.table.td class="box text-center">
-                                    @if ($asistente->featureConsumptions->isEmpty())
-                                        SIN CONSUMOS
-                                    @else
-                                        {{ $asistente->featureConsumptions->map(fn($fc) => $fc->ticketFeature->name)->implode(', ') }}
-                                    @endif
+
+                                <x-base.table.td class="text-center align-middle p-4 border-0">
+                                    @php
+                                        $totalPagado = $asistente->payments->sum('amount');
+                                    @endphp
+                                    ${{ number_format($totalPagado, 0, ',', '.') }}
                                 </x-base.table.td>
 
+                                <x-base.table.td class="text-center align-middle p-4 border-0">
+                                    <div
+                                        class="alert bg-{{ $asistente->has_entered ? 'success' : 'warning' }} text-slate-900 p-2 rounded-md">
+                                        {{ $asistente->has_entered ? 'Entrada' : 'No Entrada' }}
+                                    </div>
+                                </x-base.table.td>
 
-                                <x-base.table.td class="box w-56">
-                                    <div class="flex items-center justify-center">
-                                        <x-base.tippy content="Gestion de Pagos" class="mr-1">
-                                            <a class="text-warning"
-                                                href="{{ route('eventAssistant.payment', ['id' => $asistente->id]) }}"
-                                                target="_blank">
-                                                <x-base.lucide icon="credit-card" />
+                                <x-base.table.td class="text-center align-middle p-4 border-0 rounded-r-lg">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <x-base.tippy content="Gestión de Pagos">
+                                            <a href="{{ route('eventAssistant.payment', ['id' => $asistente->id]) }}"
+                                                class="text-warning hover:text-warning-dark">
+                                                <x-base.lucide icon="credit-card" class="w-5 h-5" />
+                                            </a>
+                                        </x-base.tippy>
+
+                                        <x-base.tippy content="Registrar Pago">
+                                            <a href="{{ route('payments.create', $asistente->id) }}"
+                                                class="btn btn-primary btn-sm py-1 px-2">
+                                                Registrar
                                             </a>
                                         </x-base.tippy>
                                     </div>
-                                </x-base.table.td>
-                                <x-base.table.td class="box text-center">
-                                    <a href="{{ route('payments.create', $asistente->id) }}"
-                                        class="btn btn-primary btn-sm">
-                                        Registrar Pago
-                                    </a>
                                 </x-base.table.td>
                             </x-base.table.tr>
                         @endforeach
@@ -230,7 +211,7 @@
                 </x-base.table>
             </div>
         </div>
-        <!-- END: Data List -->
+        <!-- END: Payment Table -->
 
         <!-- BEGIN: Delete Confirmation Modal -->
         <x-base.dialog id="delete-confirmation-modal">
@@ -260,7 +241,6 @@
             </x-base.dialog.panel>
         </x-base.dialog>
 
-
         <script>
             function setDeleteAction(element) {
                 // Obtener el ID desde el atributo data-id
@@ -272,9 +252,8 @@
             document.getElementById('generateCouponsButton').addEventListener('click', function() {
                 const eventId = {{ $idEvent }}; // ID del evento (modificar dinámicamente si es necesario)
                 const numberOfCoupons = document.getElementById('ticketType')
-                    .value;; // Número de cupones que quieres generar
+                    .value; // Número de cupones que quieres generar
                 const ticketTypeId = document.getElementById('ticketType').value; // Obtener el ticket seleccionado
-
                 fetch("{{ route('generateCoupons') }}", {
                         method: 'POST',
                         headers: {
@@ -294,7 +273,6 @@
                     })
                     .catch(error => console.error('Error:', error));
             });
-
             // Función para cargar los cupones y actualizar la tabla
             function loadCoupons(eventId) {
                 fetch(`/get-coupons/${eventId}`)
@@ -302,21 +280,24 @@
                     .then(coupons => {
                         let tableBody = document.getElementById('couponsTableBody');
                         tableBody.innerHTML = ''; // Limpiar la tabla
-
                         coupons.forEach((coupon, index) => {
                             let row = `
-                            <tr>
-                                <td class="px-4 py-2">${index + 1}</td>
-                                <td class="px-4 py-2">${coupon.numeric_code}</td>
-                                <td class="px-4 py-2">${coupon.ticket_type.name}</td>
-                                <td class="px-4 py-2">${coupon.is_consumed ? 'Sí' : 'No'}</td>
-                            </tr>
-                        `;
+                    <tr>
+                        <td class="px-4 py-2">${index + 1}</td>
+                        <td class="px-4 py-2">${coupon.numeric_code}</td>
+                        <td class="px-4 py-2">${coupon.ticket_type.name}</td>
+                        <td class="px-4 py-2">${coupon.is_consumed ? 'Sí' : 'No'}</td>
+                    </tr>
+                `;
                             tableBody.insertAdjacentHTML('beforeend', row);
                         });
                     });
             }
-            loadCoupons({{ $idEvent }});
+
+            // Inicializar carga de cupones
+            @if (isset($idEvent))
+                loadCoupons({{ $idEvent }});
+            @endif
         </script>
 
         <!-- END: Delete Confirmation Modal -->
