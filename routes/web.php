@@ -75,32 +75,34 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     //CRUD CONFIGURACIONES
     //CRUD CONFIGURACION DEPARTAMENTO
-    Route::get('/department',[DepartmentController::class,'list'])->name('department.index');
-    Route::get('/department/create',[DepartmentController::class,'create'])->name('department.create');
-    Route::post('/department/create',[DepartmentController::class,'store'])->name('department.store');
-    Route::get('/department/update/{id}',[DepartmentController::class,'edit'])->name('department.edit');
-    Route::post('/department/update/',[DepartmentController::class,'update'])->name('department.update');
-    Route::get('/department/delete/{id}',[DepartmentController::class,'delete'])->name('department.delete');
+    Route::get('/department', [DepartmentController::class, 'list'])->name('department.index');
+    Route::get('/department/create', [DepartmentController::class, 'create'])->name('department.create');
+    Route::post('/department/create', [DepartmentController::class, 'store'])->name('department.store');
+    Route::get('/department/update/{id}', [DepartmentController::class, 'edit'])->name('department.edit');
+    Route::post('/department/update/', [DepartmentController::class, 'update'])->name('department.update');
+    Route::get('/department/delete/{id}', [DepartmentController::class, 'delete'])->name('department.delete');
 
     //CRUD CONFIGURACION CIUDAD
-    Route::get('/city',[CityController::class,'list'])->name('city.index');
-    Route::get('/city/create',[CityController::class,'create'])->name('city.create');
-    Route::post('/city/create',[CityController::class,'store'])->name('city.store');
-    Route::get('/city/update/{id}',[CityController::class,'edit'])->name('city.edit');
-    Route::post('/city/update/',[CityController::class,'update'])->name('city.update');
-    Route::get('/city/delete/{id}',[CityController::class,'delete'])->name('city.delete');
+    Route::get('/city', [CityController::class, 'list'])->name('city.index');
+    Route::get('/city/{departmentId}', [CityController::class, 'getCitiesByDepartment']);
 
-    //CRUD  CONFIGURACION TICKETFREATURE
-    Route::get('/ticketFeatures',[TicketFeatureController::class,'index'])->name('ticketFeatures.index');
-    Route::get('/ticketFeaturess/create',[TicketFeatureController::class,'create'])->name('ticketFeatures.create');
-    Route::post('/ticketFeatures/create',[TicketFeatureController::class,'store'])->name('ticketFeatures.store');
-    Route::get('/ticketFeatures/update/{id}',[TicketFeatureController::class,'edit'])->name('ticketFeatures.edit');
-    Route::post('/ticketFeatures/update/',[TicketFeatureController::class,'update'])->name('ticketFeatures.update');
-    Route::get('/ticketFeatures/delete/{id}',[TicketFeatureController::class,'delete'])->name('ticketFeatures.delete');
 
+    Route::get('/city/create', [CityController::class, 'create'])->name('city.create');
+    Route::post('/city/create', [CityController::class, 'store'])->name('city.store');
+    Route::get('/city/update/{id}', [CityController::class, 'edit'])->name('city.edit');
+    Route::post('/city/update/', [CityController::class, 'update'])->name('city.update');
+    Route::get('/city/delete/{id}', [CityController::class, 'delete'])->name('city.delete');
+
+    //CRUD  CONFIGURACION TICKETFEATURE
+    Route::get('/ticketFeatures', [TicketFeatureController::class, 'index'])->name('ticketFeatures.index');
+    Route::get('/ticketFeatures/create', [TicketFeatureController::class, 'create'])->name('ticketFeatures.create');
+    Route::post('/ticketFeatures/create', [TicketFeatureController::class, 'store'])->name('ticketFeatures.store');
+    Route::get('/ticketFeatures/update/{id}', [TicketFeatureController::class, 'edit'])->name('ticketFeatures.edit');
+    Route::put('ticketFeatures/update', [TicketFeatureController::class, 'update'])->name('ticketFeatures.update');
+    Route::get('/ticketFeatures/delete/{id}', [TicketFeatureController::class, 'delete'])->name('ticketFeatures.delete');
 
     //CRUD PDF
-    Route::get('/pdf/{id}',[PDFController::class,'buildPDF'])->name('pdf');
+    Route::get('/pdf/{id}', [PDFController::class, 'buildPDF'])->name('pdf');
     Route::get('/pdf/{id}/download', [PDFController::class, 'downloadPDF'])->name('pdf.download');
 
     //CRUD PAYPAL
@@ -120,13 +122,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('search-AutocompleteLayout', [AjaxController::class, 'searchAutocompleteLayout']);
 
 
-    Route::prefix('auth-complete-search')->group(function(){
-            Route::view('/','autocompletesearch.index');
-            Route::get('search/{query}',[AjaxController::class,'index']);
-
+    Route::prefix('auth-complete-search')->group(function () {
+        Route::view('/', 'autocompletesearch.index');
+        Route::get('search/{query}', [AjaxController::class, 'index']);
     });
 
-      //EDITAR PERFIL
+    //EDITAR PERFIL
     Route::get('/profile/update/{id}', [UserController::class, 'profileEdit'])->name('profile.edit');
     Route::post('/profile/update', [UserController::class, 'profileUpdate'])->name('profile.update');
     Route::get('/profile/changeProfilePhoto', [UserController::class, 'changeProfilePhoto'])->name('profile.changeProfilePhoto');
@@ -140,6 +141,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/event/create', [EventController::class, 'store'])->name('event.store');
     Route::get('/event/update/{id}', [EventController::class, 'edit'])->name('event.edit');
     Route::post('/event/update', [EventController::class, 'update'])->name('event.update');
+    Route::delete('/event/{id}', [EventController::class, 'destroy'])->name('event.destroy');
     Route::post('/event/generatePublicLink/{id}', [EventController::class, 'generatePublicLink'])->name('event.generatePublicLink');
     Route::get('/events/{id}/set-registration-parameters', [EventController::class, 'setRegistrationParameters'])->name('events.setRegistrationParameters');
     Route::post('/events/{id}/store-registration-parameters', [EventController::class, 'storeRegistrationParameters'])->name('events.storeRegistrationParameters');

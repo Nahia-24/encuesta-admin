@@ -17,31 +17,34 @@ class DepartmentController extends Controller
         return response()->json(['cities' => $cities]);
     }
 
-    public function list(){
+    public function list()
+    {
         $roles = Role::all();
-        $departments = Department::all(); // Obtener los departamentos
-        return view('department.index', compact(['roles', 'departments']));
+        $departments = Department::paginate(15); // 👈 Asegúrate de usar paginate()
+        return view('department.index', compact('departments'));
     }
 
 
-    public function create(){
-        $roles = Role::all();       
+    public function create()
+    {
+        $roles = Role::all();
         return view('department.create', compact(['roles']));
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
 
 
         $request->validate([
             'code_dane' => 'required|string|max:255',
-            'name' => 'required|string|max:255',            
+            'name' => 'required|string|max:255',
         ]);
 
         $departamento = new Department();
         $departamento->code_dane = $request->code_dane;
-        $departamento->name = $request->name;             
+        $departamento->name = $request->name;
         $departamento->save();
-        
+
 
         // Redirigir con mensaje de éxito
         return redirect()->route('department.index')->with('success', 'Departamento creado con éxito.');
@@ -52,21 +55,22 @@ class DepartmentController extends Controller
         return view('department.index', compact(['roles', 'department']));
     }
 
-    public function edit($id){
+    public function edit($id)
+    {
         $department = Department::find($id);
-        $roles = Role::all();        
+        $roles = Role::all();
         return view('department.update', compact(['roles', 'department']));
-        
     }
 
-    public function update(Request $request){
+    public function update(Request $request)
+    {
 
         $departmentId = $request->id;
         $request->validate([
             'code_dane' => 'required|string|max:255',
-            'name' => 'required|string|max:255',            
+            'name' => 'required|string|max:255',
         ]);
-        
+
         $department = Department::findOrFail($departmentId);
         $department->code_dane = $request->code_dane;
         $department->name = $request->name;
@@ -80,27 +84,27 @@ class DepartmentController extends Controller
     }
 
 
-    public function delete($id){
-        
-        $department=Department::find($id);
-        if (!$department)
-        {   $data=[
-                'message'=>'Departamento no Encontrado',
-                'status'=>404
-                    
-               ];
-            return redirect()->route('department.index')->with('404', 'Departamento no Encontrado');   
-            
+    public function delete($id)
+    {
+
+        $department = Department::find($id);
+        if (!$department) {
+            $data = [
+                'message' => 'Departamento no Encontrado',
+                'status' => 404
+
+            ];
+            return redirect()->route('department.index')->with('404', 'Departamento no Encontrado');
         };
 
         $department->delete();
 
-           
-        $data=[
-            'message'=>'Departamento Eliminado',
-            'status'=>201
+
+        $data = [
+            'message' => 'Departamento Eliminado',
+            'status' => 201
         ];
-        return redirect()->route('department.index')->with('201', 'Departamento Eliminado'); 
+        return redirect()->route('department.index')->with('201', 'Departamento Eliminado');
         $roles = Role::all();
         $departments = Department::all(); // Obtener los departamentos
         return view('department.index', compact(['roles', 'departments']));

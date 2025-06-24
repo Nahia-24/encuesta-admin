@@ -2,8 +2,7 @@
 
 @section('subhead')
     <title>Pagar Ticket</title>
-    <link rel="stylesheet" href="{{url('css/blade.css')}}">
-
+    <link rel="stylesheet" href="{{ url('css/blade.css') }}">
 @endsection
 
 @section('subcontent')
@@ -12,12 +11,19 @@
             {{ session('error') }}
         </div>
     @endif
-    <a href="{{ route('eventAssistant.index', ['idEvent' => $eventAssistant->event_id]) }}">volver</a>
-    <h2 class="intro-y mt-10 text-lg font-medium">Informacion del Pago</h2>
-    <div class="mt-5 flex justify-center">
-        <a class="text-info box p-3" href="{{ route('eventAssistant.sendEmailInfoPago', ['id' => $eventAssistant->id]) }}" target="_blank">
-            <x-base.lucide icon="send" /> Enviar Correo
+
+    <div class="flex justify-between items-center mt-10 ">
+        <h2 class="text-lg font-medium">Informacion del Pago</h2>
+        <a href="{{ route('eventAssistant.sendEmailInfoPago', ['id' => $eventAssistant->id]) }}" target="_blank"
+            class="flex items-center gap-2 text-info bg-white border border-info px-4 py-2 rounded-md hover:bg-info/10 transition duration-150">
+            <x-base.lucide icon="send" class="w-5 h-5" />
+            <span>Enviar Correo</span>
         </a>
+
+        <x-base.button class="shadow-md h-9 px-8 text-sm" type="button" variant="primary"
+            onclick="window.location='{{ route('eventAssistant.index', ['idEvent' => $eventAssistant->event_id]) }}'">
+            Volver
+        </x-base.button>
     </div>
 
     @php
@@ -25,195 +31,270 @@
         $selectedFields = json_decode($eventAssistant->event->registration_parameters, true) ?? [];
         $additionalParameters = json_decode($eventAssistant->event->additionalParameters, true) ?? [];
     @endphp
-    <div class="mt-5">
-        <div class="box p-5">
-            <h3 class="text-lg font-medium">Información del Asistente</h3>
-
-            @foreach($selectedFields as $field)
-                <p class=""><strong>
-                    {{ config("traductorColumnasUsers.$field", ucfirst(str_replace('_', ' ', $field))) }}
-                </strong>: {{ $eventAssistant->user->$field }}</p>
-            @endforeach
-
-            @foreach($additionalParameters as $parameter)
-
-            @php
-                $userParameter = $eventAssistant->eventParameters->where('event_id', $eventAssistant->event_id)->where('additional_parameter_id', $parameter['id'])->first();
-            @endphp
-                <p class=""><strong>{{ ucfirst(str_replace('_', ' ', $parameter['name'])) }}</strong>: {{ $userParameter ? $userParameter->value : '-' }}</p>
-            @endforeach
-            <h3 class="text-lg font-medium mt-5">Información del Evento</h3>
-            <p><strong>Nombre del Evento:</strong> {{ $eventAssistant->event->name }}</p>
-            <p><strong>Descripción:</strong> {{ $eventAssistant->event->description }}</p>
-            <p><strong>Fecha del Evento:</strong> {{ $eventAssistant->event->event_date }}</p>
-            <p><strong>Hora de Inicio:</strong> {{ $eventAssistant->event->start_time }}</p>
-            <p><strong>Hora de Finalización:</strong> {{ $eventAssistant->event->end_time }}</p>
-            <p><strong>Ciudad:</strong> {{ $eventAssistant->event->city->name ?? 'N/A' }}</p>
-            <p><strong>Capacidad:</strong> {{ $eventAssistant->event->capacity }}</p>
-            <br>
-            <h3 class="text-lg font-medium mt-5">Características del Ticket</h3>
-            <ul>
-                <strong>Nombre:</strong> {{ $eventAssistant->ticketType?->name ?? "SIN REGISTRO"  }} <br>
-                <strong>Caracteristicas:</strong>
-                @foreach ($eventAssistant?->ticketType?->features as $feature)
-                        {{ $feature->name }},
+    <div class="box p-5 space-y-6 mt-10">
+        <div>
+            <h3 class="text-lg font-semibold border-b pb-2 mb-4">Información del Asistente</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach ($selectedFields as $field)
+                    <div>
+                        <span class="font-medium text-gray-600">
+                            {{ config("traductorColumnasUsers.$field", ucfirst(str_replace('_', ' ', $field))) }}:
+                        </span>
+                        <div class="text-black">{{ $eventAssistant->user->$field }}</div>
+                    </div>
                 @endforeach
-                <br>
-                <strong>Precio:</strong> ${{ $eventAssistant->ticketType?->formattedPrice() }}
-            </ul>
-            <br>
-        </div>
-    </div>
 
-    @if (!$eventAssistant->is_paid)
-    @if($eventAssistant->totalPayments() > 0)
-    <div class="mt-5">
-        <div class="box p-5">
-            Actualmente se tiene registrado un abono Total de {{$eventAssistant->totalPayments()}}
-
-            @foreach($eventAssistant->payments as $payment)
-            <div class="mb-4 box p-1">
-                Pago por un valor de  <strong>{{$payment->amount}}</strong> por <strong>{{$payment->payer_name}}</strong>
-                <a class="ml-1 underline" target="_blank" href="{{ route('payments.generatePDF', ['id' => $payment->id]) }}">Generar PDF</a>
+                @foreach ($additionalParameters as $parameter)
+                    @php
+                        $userParameter = $eventAssistant->eventParameters
+                            ->where('event_id', $eventAssistant->event_id)
+                            ->where('additional_parameter_id', $parameter['id'])
+                            ->first();
+                    @endphp
+                    <div>
+                        <span
+                            class="font-medium text-gray-600">{{ ucfirst(str_replace('_', ' ', $parameter['name'])) }}:</span>
+                        <div class="text-black">{{ $userParameter ? $userParameter->value : '-' }}</div>
+                    </div>
+                @endforeach
             </div>
-            @endforeach
+        </div>
+
+        <div>
+            <h3 class="text-lg font-semibold mt-8 mb-2 border-b border-gray-300 pb-2">Información del Evento</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><strong>Nombre:</strong> {{ $eventAssistant->event->name }}</div>
+                <div><strong>Descripción:</strong> {{ $eventAssistant->event->description }}</div>
+                <div><strong>Fecha:</strong> {{ $eventAssistant->event->event_date }}</div>
+                <div><strong>Hora Inicio:</strong> {{ $eventAssistant->event->start_time }}</div>
+                <div><strong>Hora Fin:</strong> {{ $eventAssistant->event->end_time }}</div>
+                <div><strong>Ciudad:</strong> {{ $eventAssistant->event->city->name ?? 'N/A' }}</div>
+                <div><strong>Capacidad:</strong> {{ $eventAssistant->event->capacity }}</div>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-lg font-semibold mt-8 mb-2 border-b border-gray-300 pb-2">Características del Ticket</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <strong>Tipo de Entrada:</strong>
+                    {{ $eventAssistant->ticketType?->name ?? 'SIN REGISTRO' }}
+                </div>
+                <div>
+                    <strong>Precio:</strong>
+                    ${{ $eventAssistant->ticketType?->formattedPrice() }}
+                </div>
+                <div class="col-span-2">
+                    <strong>Características:</strong>
+                    @php
+                        $characteristics = $eventAssistant->ticketType?->characteristics;
+                    @endphp
+                    <div>
+                        @if ($characteristics && $characteristics->count())
+                            {{ $characteristics->pluck('name')->implode(', ') }}
+                        @else
+                            <em>No hay características</em>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    @endif
-    <div class="mt-5">
-        <div class="box p-5">
-            <h3 class="text-lg font-medium">Realizar Pago</h3>
-            <form class="form form_pagos" action="{{ route('eventAssistant.payment.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <!-- Nombre del Pagador -->
-                <div class="row row_payer_name">
-                    <label for="payer_name" class="form-label">Nombre del Pagador</label>
-                    <input type="text" id="payer_name" name="payer_name" class="form-control" required>
-                </div>
 
-                <!-- Tipo de Documento del Pagador -->
-                <div class="row row_identificacion">
-                    <div class="col mt-3 col_identificacion_type">
-                            <label for="payer_document_type" class="form-label label_document_type">Tipo de Documento</label>
-                            <select id="payer_document_type" name="payer_document_type" class="form-control select_document_type  form_control_Pagos_select" required>
-                                <option value="" disabled selected>Tipo de Documento</option>
-                                <option value="CC">Cédula de Ciudadanía</option>
-                                <option value="TI">Tarjeta de Identidad</option>
-                                <option value="PP">Pasaporte</option>
-                            </select>
-                    </div>
+    {{-- LÓGICA PRINCIPAL CORREGIDA --}}
+    @if (!$eventAssistant->is_paid)
+        {{-- CASO 1: AÚN NO ESTÁ PAGADO --}}
 
-                    <!-- Número de Documento del Pagador -->
-                    <div class="col mt-3 col_identificacion_number">
-                            <label for="payer_document_number" class="form-label">No. de Documento</label>
-                            <input type="text" id="payer_document_number" name="payer_document_number" class="form-control" required>
-
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <label for="courtesy_code_checkbox" class="form-label">¿Tienes un Cupon de cortesía?</label>
-                    <input type="checkbox" id="courtesy_code_checkbox" name="courtesy_code_checkbox" onchange="toggleCourtesyCode()">
-                </div>
-
-                <!-- Campo del Código de Cortesía, oculto inicialmente -->
-                <div class="mt-3" id="courtesy_code_div" style="display: none;">
-                    <label for="courtesy_code" class="form-label">Cupon de Cortesía</label>
-                    <input type="text" id="courtesy_code" name="courtesy_code" class="form-control">
-                </div>
-                <!-- Cantidad a Pagar -->
-                <div class="row row_amountpagos" id="amountDiv">
-                    <div class="col mt-3 col_amountDiv">
-                        <label for="amount" class="form-label">Cantidad a Pagar</label>
-                        <input type="number" id="amount" name="amount" class="form-control form-control-amount" value="{{ $eventAssistant->ticketType?->price - $eventAssistant->totalPayments() }}" required>
-
-                    </div>
-
-                    <!-- Forma de Pago -->
-                    <div class="col mt-3 col_paymentMethod">
-                        <label for="payment_method" class="form-label">Forma de Pago</label>
-                        <select id="payment_method" name="payment_method" class="form_control form_control_Pagos_select_paymentMethod" required onchange="togglePaymentProof()">
-                            <option class="" value="" disabled selected>Forma de Pago</option>
-                            <option value="transferencia">Transferencia</option>
-                            <option value="efectivo">Efectivo</option>
-                            <option value="PayPal">Paypal</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Imagen de la Transferencia -->
-                <div class="mt-3" id="transfer_proof" style="display: none;">
-                    <label for="payment_proof" class="form-label">Comprobante de Transferencia</label>
-                    <input type="file" id="payment_proof" name="payment_proof" class="form_control">
-                </div>
-
-                <!-- Botón para enviar -->
-                <div class="mt-5">
-                    <button data-tw-merge type="submit" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&amp;:hover:not(:disabled)]:bg-opacity-90 [&amp;:hover:not(:disabled)]:border-opacity-90 [&amp;:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary mb-2 mr-1 mb-2 mr-1">Realizar Pago</button>
-                </div>
-
-                <!-- ID del asistente -->
-                <input type="hidden" name="event_assistant_id" value="{{ $eventAssistant->id }}">
-            </form>
-        </div>
-    </div>
-    @else
-
-    <div class="mt-5">
-        <div class="box p-5">
-            Actualmente la Boleta ya está registrado como pagado
+        {{-- Mostramos abonos si existen (una sola vez) --}}
+        @if ($eventAssistant->totalPayments() > 0)
             <div class="mt-5">
                 <div class="box p-5">
-
-                    @foreach($eventAssistant->payments as $payment)
-                    <div class="mb-4 box p-1">
-                        Pago por un valor de  <strong>{{$payment->amount}}</strong> por <strong>{{$payment->payer_name}}</strong>
-                        <a class="ml-1 underline" target="_blank" href="{{ route('payments.generatePDF', ['id' => $payment->id]) }}">Generar PDF</a>
-                    </div>
+                    Actualmente se tiene registrado un abono Total de {{ $eventAssistant->totalPayments() }}
+                    @foreach ($eventAssistant->payments as $payment)
+                        <div class="mb-4 box p-1">
+                            Pago por un valor de <strong>${{ number_format($payment->amount, 0, ',', '.') }}</strong>
+                            por <strong>{{ $payment->payer_name }}</strong>
+                            <a class="ml-1 underline" target="_blank"
+                                href="{{ route('payments.generatePDF', ['id' => $payment->id]) }}">Generar PDF</a>
+                        </div>
                     @endforeach
                 </div>
             </div>
+        @endif
 
-            @foreach($eventAssistant->payments as $payment)
-            @if ($payment->payment_proof)
-            <div class="mb-4">
-                <img class="w-100 h-100" src="{{ asset('storage/' . $payment->payment_proof) }}" alt="Comprobante pago">
+        {{-- Mostramos el formulario de pago --}}
+        <div class="mt-5">
+            <div class="bg-white p-8 shadow-lg rounded-lg w-full max-w-2xl mx-auto">
+                <h3 class="text-2xl font-bold mb-6 text-gray-800 text-center">Realizar Pago</h3>
+
+                <form action="{{ route('eventAssistant.payment.store') }}" method="POST" enctype="multipart/form-data"
+                    class="space-y-6">
+                    @csrf
+                    <input type="hidden" name="event_assistant_id" value="{{ $eventAssistant->id }}">
+
+                    <div>
+                        <label for="payer_name" class="block text-sm font-medium text-gray-700 mb-1">Nombre del
+                            Pagador</label>
+                        <input type="text" id="payer_name" name="payer_name"
+                            class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                    </div>
+
+                    <div>
+                        <label for="payer_document_type" class="block text-sm font-medium text-gray-700 mb-1">Tipo de
+                            Documento</label>
+                        <select id="payer_document_type" name="payer_document_type"
+                            class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                            <option value="" disabled selected>Seleccione una opción</option>
+                            <option value="CC">Cédula de Ciudadanía</option>
+                            <option value="TI">Tarjeta de Identidad</option>
+                            <option value="PP">Pasaporte</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="payer_document_number" class="block text-sm font-medium text-gray-700 mb-1">No. de
+                            Documento</label>
+                        <input type="text" id="payer_document_number" name="payer_document_number"
+                            class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                    </div>
+
+                    <div class="mt-6">
+                        <label class="flex items-center cursor-pointer">
+                            <!-- Checkbox oculto -->
+                            <input type="checkbox" id="has_coupon" name="has_coupon" onchange="toggleCouponField()"
+                                style="display: none;">
+                            <!-- Título visible arriba del toggle -->
+                            <label for="has_coupon" class="block text-sm font-medium text-gray-700 mb-2">
+                                ¿Tienes un cupón de cortesía?
+                            </label>
+                            <!-- Switch visual -->
+                            <div class="relative w-12 h-6 bg-gray-300 rounded-full transition-colors duration-300 mr-3"
+                                id="switch-bg">
+                                <div id="switch-thumb"
+                                    class="absolute left-[2px] w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
+                                    style="top: 0.5px;">
+                                </div>
+                            </div>
+                            <!-- Texto -->
+                            <span class="text-sm text-gray-700">Activar</span>
+                        </label>
+                        <!-- Campo del cupón -->
+                        <div class="mt-4 space-y-2 hidden" id="coupon_field">
+                            <label for="courtesy_code" class="block text-sm font-medium text-gray-700">
+                                Cupón de Cortesía
+                            </label>
+                            <div class="flex gap-2">
+                                <input id="courtesy_code" name="courtesy_code" type="text"
+                                    class="flex-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Ingresa tu cupón" />
+                                <button type="button" class="bg-[#1F3262] text-white text-sm px-4 py-2 rounded">
+                                    Validar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Campo de monto a pagar --}}
+                    <div class="mt-3">
+                        <div id="amountDiv">
+                            <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Cantidad a
+                                Pagar</label>
+                            <input type="number" id="amount" name="amount"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm bg-gray-100"
+                                value="{{ $eventAssistant->ticketType->price ?? 0 }}" readonly>
+                        </div>
+
+                        <div id="paymentMethodDiv">
+                            <label for="payment_method" class="block text-sm font-medium text-gray-700 mb-1">Forma de
+                                Pago</label>
+                            <select id="payment_method" name="payment_method"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                onchange="togglePaymentProof()" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="transferencia">Transferencia</option>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="PayPal">PayPal</option>
+                            </select>
+                        </div>
+
+                        <div id="transfer_proof" class="hidden">
+                            <label for="payment_proof" class="block text-sm font-medium text-gray-700 mb-1">Comprobante de
+                                Transferencia</label>
+                            <input type="file" id="payment_proof" name="payment_proof"
+                                class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex justify-center">
+                        <x-base.button type="submit" variant="primary" class="w-full md:w-auto py-3 px-6">
+                            Realizar Pago
+                        </x-base.button>
+                    </div>
+                </form>
             </div>
-            @endif
-            @endforeach
+        </div>
+    @else
+        {{-- CASO 2: EL TICKET YA ESTÁ PAGADO --}}
+        <div class="mt-5">
+            <div class="box p-5">
+                <p>Actualmente la Boleta ya está registrada como pagada.</p>
+
+                {{-- Historial de pagos si la boleta ya fue pagada --}}
+                @if ($eventAssistant->payments->isNotEmpty())
+                    <h4 class="font-medium mt-4">Historial de Pagos</h4>
+                    @foreach ($eventAssistant->payments as $payment)
+                        <div class="border-t mt-4 pt-4">
+                            Pago por un valor de
+                            <strong>${{ number_format($payment->amount, 0, ',', '.') }}</strong>
+                            <a class="ml-2 underline" target="_blank"
+                                href="{{ route('payments.generatePDF', ['id' => $payment->id]) }}">Generar PDF</a>
+                            @if ($payment->payment_proof)
+                                <img class="mt-2 rounded-md max-w-sm"
+                                    src="{{ asset('storage/' . $payment->payment_proof) }}" alt="Comprobante pago">
+                            @endif
+                        </div>
+                    @endforeach
+                @endif
             </div>
-    </div>
+        </div>
     @endif
+
 @endsection
 
-
-<script>
-    function togglePaymentProof() {
-        var paymentMethod = document.getElementById('payment_method').value;
-        var transferProof = document.getElementById('transfer_proof');
-        if (paymentMethod === 'transferencia') {
-            transferProof.style.display = 'block';
-        } else {
-            transferProof.style.display = 'none';
+{{-- El SCRIPT se mueve al final, pero antes de @endpush o al final de la sección --}}
+@push('scripts')
+    <script>
+        function toggleCouponField() {
+            const checkbox = document.getElementById('has_coupon');
+            const couponField = document.getElementById('coupon_field');
+            const switchBg = document.getElementById('switch-bg');
+            const switchThumb = document.getElementById('switch-thumb');
+            if (checkbox.checked) {
+                couponField.classList.remove('hidden');
+                switchBg.style.backgroundColor = '#1F3262'; // Azul oscuro
+                switchThumb.style.transform = 'translateX(24px)';
+            } else {
+                couponField.classList.add('hidden');
+                switchBg.style.backgroundColor = '#D1D5DB'; // Gris claro
+                switchThumb.style.transform = 'translateX(0)';
+            }
         }
-    }
+        // Estado inicial
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('switch-bg').style.backgroundColor = '#D1D5DB';
+        });
 
-    function toggleCourtesyCode() {
-        var checkBox = document.getElementById('courtesy_code_checkbox');
-        var courtesyCodeDiv = document.getElementById('courtesy_code_div');
-        var paymentMethod = document.getElementById('paymentMethodDiv');
-        var amount = document.getElementById('amountDiv');
-        var paymentMethodSelect = document.getElementById('payment_method');
-
-        if (checkBox.checked) {
-            courtesyCodeDiv.style.display = 'block';
-            paymentMethod.style.display = 'none';
-            amount.style.display = 'none';
-            paymentMethodSelect.removeAttribute('required');  // Eliminar el atributo required
-        } else {
-            courtesyCodeDiv.style.display = 'none';
-            paymentMethod.style.display = 'block';
-            amount.style.display = 'block';
-            paymentMethodSelect.setAttribute('required', 'required');  // Agregar el atributo required
+        function togglePaymentProof() {
+            const paymentMethod = document.getElementById('payment_method').value;
+            const proofDiv = document.getElementById('transfer_proof');
+            if (paymentMethod === 'transferencia') {
+                proofDiv.classList.remove('hidden');
+            } else {
+                proofDiv.classList.add('hidden');
+            }
         }
-    }
-</script>
+    </script>
+@endpush

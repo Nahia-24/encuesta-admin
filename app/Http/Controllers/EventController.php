@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\Models\EventAssistant;
 use App\Models\TicketFeatures;
 use App\Models\TicketType;
+use App\Models\TicketCharacteristic;
 use App\Models\User;
 use App\Models\UserEventParameter;
 use Illuminate\Http\Request;
@@ -28,23 +29,27 @@ class EventController extends Controller
         // return $status;
         $eventos = Event::query()
             ->when($search, function ($query, $search) {
-                $status = config('statusEvento.'.$search);
+                $status = config('statusEvento.' . $search);
                 $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
-                if($status){
+                    ->orWhere('description', 'like', "%{$search}%");
+                if ($status) {
                     $query
-                    ->orWhere('status', 'like', "%{$status}%");
+                        ->orWhere('status', 'like', "%{$status}%");
                 }
             })
             ->paginate(10);
         return view('event.index', compact('eventos', 'search'));
     }
 
-    public function create (){
+    public function create()
+    {
         $departments = Departament::all();
         $features = TicketFeatures::all();
-        return view('event.create', compact('departments', 'features'));
+        $characteristics = TicketCharacteristic::all();
+
+        return view('event.create', compact('departments', 'features', 'characteristics'));
     }
+
     public function store(Request $request)
     {
         // Validar los datos de entrada
@@ -60,12 +65,17 @@ class EventController extends Controller
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'header_image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'color_one' => 'nullable|string|max:7', // HEX color format
-            'color_two' => 'nullable|string|max:7', // HEX color format
+            'color_one' => 'nullable|string|max:7',
+            'color_two' => 'nullable|string|max:7',
+
+            // Tipos de entradas
             'ticketTypes.*.name' => 'required|string|max:255',
             'ticketTypes.*.capacity' => 'required|integer|min:1',
             'ticketTypes.*.price' => 'required|numeric',
-            'ticketTypes.*.features' => 'required|array|exists:ticket_features,id',
+            'ticketTypes.*.characteristics' => 'required|array|min:1',
+            'ticketTypes.*.characteristics.*' => 'exists:ticket_characteristics,id',
+
+            // Campos adicionales
             'additionalFields.*.label' => 'required|string|max:255',
             'additionalFields.*.value' => 'required|string|max:255',
         ]);
@@ -93,7 +103,7 @@ class EventController extends Controller
         $event->color_one = $request->color_one;
         $event->color_two = $request->color_two;
         // Convertir los campos adicionales a JSON
-        if($request->input('additionalFields')){
+        if ($request->input('additionalFields')) {
             $event->additionalFields = json_encode($request->input('additionalFields', []));
         }
 
@@ -102,7 +112,7 @@ class EventController extends Controller
         $event->save();
 
         // Crear los tipos de entradas
-        if($request->ticketTypes){
+        if ($request->ticketTypes) {
             foreach ($request->ticketTypes as $ticketTypeData) {
                 $ticketType = $event->ticketTypes()->create([
                     'name' => $ticketTypeData['name'],
@@ -118,80 +128,86 @@ class EventController extends Controller
         return redirect()->route('event.index')->with('success', 'Evento creado exitosamente.');
     }
 
-    public function edit($id){
-        $event = Event::find($id);
+    public function edit($id)
+    {
+        $event = Event::with('ticketTypes.characteristics')->findOrFail($id);
         $departments = Departament::all();
         $features = TicketFeatures::all();
-        return view('event.update', compact(['event', 'departments', 'features']));
+        $characteristics = TicketCharacteristic::all(); // ✅ Agregado
+
+        return view('event.update', compact('event', 'departments', 'features', 'characteristics'));
     }
 
-    public function update(Request $request){
-
+    public function update(Request $request)
+    {
         try {
             $id = $request->id;
             $event = Event::findOrFail($id);
 
-            // Validar los datos de entrada
+            // Validación de campos
             $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
                 'capacity' => 'required|integer|min:1',
                 'event_date' => 'required|date',
                 'event_date_end' => 'required|date',
+                'start_time' => 'required|date_format:H:i',
+                'end_time' => 'required|date_format:H:i|after:start_time',
+                'address' => 'required|max:255',
+                'status' => 'required',
+                'color_one' => 'nullable|string|max:7',
+                'color_two' => 'nullable|string|max:7',
                 'header_image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'color_one' => 'nullable|string|max:7', // HEX color format
-                'color_two' => 'nullable|string|max:7', // HEX color format
                 'ticketTypes.*.name' => 'required|string|max:255',
                 'ticketTypes.*.capacity' => 'required|integer|min:1',
                 'ticketTypes.*.price' => 'required|numeric',
-                'address' => 'required|max:255',
-                'status' => 'required',
+                'ticketTypes.*.characteristics' => 'required|array|min:1',
+                'ticketTypes.*.characteristics.*' => 'exists:ticket_characteristics,id',
             ]);
 
-            // Manejar la carga de la nueva imagen si se sube una
+            // Imagen nueva (si aplica)
             if ($request->hasFile('header_image_path')) {
                 if ($event->header_image_path) {
                     Storage::disk('public')->delete($event->header_image_path);
                 }
-                $image = $request->file('header_image_path');
-                $event->header_image_path = $image->store('event_images', 'public');
+                $event->header_image_path = $request->file('header_image_path')->store('event_images', 'public');
             }
 
-            // Actualizar el evento
-            $event->name = $request->name;
-            $event->description = $request->description;
-            $event->capacity = $request->capacity;
-            $event->city_id = $request->city_id;
-            $event->event_date = $request->event_date;
-            $event->event_date_end = $request->event_date_end;
-            $event->start_time = $request->start_time;
-            $event->end_time = $request->end_time;
-            $event->address = $request->address;
-            $event->status = $request->status;
-            $event->color_one = $request->color_one;
-            $event->color_two = $request->color_two;
+            // Actualizar campos básicos
+            $event->fill([
+                'name' => $request->name,
+                'description' => $request->description,
+                'capacity' => $request->capacity,
+                'event_date' => $request->event_date,
+                'event_date_end' => $request->event_date_end,
+                'start_time' => $request->start_time,
+                'end_time' => $request->end_time,
+                'address' => $request->address,
+                'status' => $request->status,
+                'color_one' => $request->color_one,
+                'color_two' => $request->color_two,
+                'city_id' => $request->city_id,
+            ]);
 
-            // Convertir los campos adicionales a JSON
-            if($request->input('additionalFields')){
+            if ($request->filled('additionalFields')) {
                 $event->additionalFields = json_encode($request->input('additionalFields', []));
             }
+
             $event->save();
 
-            // Obtener los IDs de los ticketTypes que vienen en la solicitud
+            // Manejo de tipos de ticket
             $newTicketTypeIds = collect($request->ticketTypes)->pluck('id')->filter()->all();
 
-            // Eliminar los ticketTypes que no están en la solicitud y no están asociados con EventAssistant
+            // Eliminar los ticketTypes que ya no están
             $event->ticketTypes()->whereNotIn('id', $newTicketTypeIds)->get()->each(function ($ticketType) {
                 if ($ticketType->EventAssistant()->exists()) {
-                    // Si el tipo de ticket está asociado a algún EventAssistant, no lo eliminamos y podríamos optar por otra lógica aquí
-                    throw new \Exception("El tipo de Boleta '{$ticketType->name}' no puede ser eliminado porque está asociado a un asistente.");
+                    throw new \Exception("El tipo de boleta '{$ticketType->name}' no puede ser eliminado porque está asociado a asistentes.");
                 }
                 $ticketType->delete();
             });
 
-            // Actualizar o crear nuevos ticketTypes
-            if($request->ticketTypes){
-                foreach ($request->ticketTypes as $ticketTypeData) {
+            // Crear/actualizar tickets
+            foreach ($request->ticketTypes as $ticketTypeData) {
                 $ticketType = TicketType::updateOrCreate(
                     ['id' => $ticketTypeData['id'] ?? null, 'event_id' => $event->id],
                     [
@@ -201,15 +217,13 @@ class EventController extends Controller
                     ]
                 );
 
-                    // Asignar características
-                    $ticketType->features()->sync($ticketTypeData['features']);
-                }
+                // Sincronizar características
+                $ticketType->characteristics()->sync($ticketTypeData['characteristics'] ?? []);
             }
 
             return redirect()->route('event.index')->with('success', 'Evento actualizado exitosamente.');
         } catch (\Exception $e) {
-            // Capturar la excepción y redirigir con un mensaje de error
-            return redirect()->route('event.edit', $id)->with('error', $e->getMessage());
+            return redirect()->route('event.edit', $request->id)->with('error', $e->getMessage());
         }
     }
 
@@ -299,11 +313,11 @@ class EventController extends Controller
         if ($request->has('email')) {
             // Verificar si el usuario ya existe por correo
             $user = User::where('email', $request->email)
-            ->first();
-        }elseif($request->has('document_number')){
+                ->first();
+        } elseif ($request->has('document_number')) {
             // Verificar si el usuario ya existe por número de documento
             $user = User::where('document_number', $request->document_number)
-            ->first();
+                ->first();
         }
         if ($user) {
             // Si el usuario existe, actualizar su información
@@ -431,5 +445,34 @@ class EventController extends Controller
             }
         }
         return redirect()->route('event.index')->with('success', 'Parámetros de inscripción guardados correctamente.');
+    }
+
+    /**
+     * Eliminar un evento junto con sus relaciones (tickets, asistentes, etc.)
+     */
+    public function destroy($id)
+    {
+        // Encontrar el evento o fallar
+        $event = Event::findOrFail($id);
+
+        // (Opcional) Verificar permisos o si hay restricciones
+        // e.g. si ya hay asistentes, podrías impedir borrarlo:
+        if ($event->assistants()->exists()) {
+            return redirect()
+                ->back()
+                ->with('error', 'No se puede eliminar un evento con asistentes registrados.');
+        }
+
+        // Eliminar imagen de portada si existe
+        if ($event->header_image_path) {
+            \Storage::disk('public')->delete($event->header_image_path);
+        }
+
+        // Eliminar el evento (se encarga de cascada en migraciones)
+        $event->delete();
+
+        return redirect()
+            ->route('event.index')
+            ->with('success', 'Evento eliminado exitosamente.');
     }
 }

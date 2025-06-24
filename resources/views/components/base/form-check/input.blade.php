@@ -2,8 +2,12 @@
 
 <input
     data-tw-merge
-    {{ $checked ? 'checked' : '' }}
-    {{ $attributes->class(
+    {{ $attributes
+        ->merge([
+            'type' => $type,
+            'checked' => $checked ? 'checked' : false,
+        ])
+        ->class(
             merge([
                 // Default
                 'transition-all duration-100 ease-in-out',
@@ -29,5 +33,4 @@
                 '[&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50',
                 $attributes->whereStartsWith('class')->first(),
             ]),
-        )->merge($attributes->whereDoesntStartWith('class')->getAttributes())->merge(['type' => $type]) }}
-/>
+        )->merge($attributes->whereDoesntStartWith('class')->getAttributes())->merge(['type' => $type]) }} />

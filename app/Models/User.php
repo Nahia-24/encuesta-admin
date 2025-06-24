@@ -53,6 +53,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+    public function department()
+    {
+        return $this->belongsTo(Departament::class, 'department_id');
+    }
 
     public function city()
     {
@@ -77,7 +81,7 @@ class User extends Authenticatable
     public function eventAssistantForEvent($eventId)
     {
         return $this->hasOne(EventAssistant::class)
-                    ->where('event_id', $eventId)
-                    ->first();
+            ->where('event_id', $eventId)
+            ->first();
     }
 }

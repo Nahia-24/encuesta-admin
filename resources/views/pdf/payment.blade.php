@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,16 +9,19 @@
         body {
             font-family: Arial, sans-serif;
         }
+
         .payment-details {
             margin: 20px;
             padding: 20px;
             border: 1px solid #ddd;
         }
+
         .payment-details strong {
             font-weight: bold;
         }
     </style>
 </head>
+
 <body>
     <h2>Detalles del Pago</h2>
 
@@ -38,23 +42,26 @@
         <div class="box p-5" align="center">
             <h1 class="text-lg font-medium">Información del Asistente</h1>
 
-            @foreach($selectedFields as $field)
-            <p class="">
-                <strong>{{ config("traductorColumnasUsers.$field", ucfirst(str_replace('_', ' ', $field))) }}</strong>:
-                @if($field === 'city_id')
-                    {{ $payment->eventAssistant->user->city ? $payment->eventAssistant->user->city->name : 'N/A' }}
-                @else
-                    {{ $payment->eventAssistant->user->$field }}
-                @endif
-            </p>
-        @endforeach
+            @foreach ($selectedFields as $field)
+                <p class="">
+                    <strong>{{ config("traductorColumnasUsers.$field", ucfirst(str_replace('_', ' ', $field))) }}</strong>:
+                    @if ($field === 'city_id')
+                        {{ $payment->eventAssistant->user->city ? $payment->eventAssistant->user->city->name : 'N/A' }}
+                    @else
+                        {{ $payment->eventAssistant->user->$field }}
+                    @endif
+                </p>
+            @endforeach
 
-            @foreach($additionalParameters as $parameter)
-
-            @php
-                $userParameter = $payment->eventAssistant->eventParameters->where('event_id', $payment->eventAssistant->event_id)->where('additional_parameter_id', $parameter['id'])->first();
-            @endphp
-                <p class=""><strong>{{ ucfirst(str_replace('_', ' ', $parameter['name'])) }}</strong>: {{ $userParameter ? $userParameter->value : '-' }}</p>
+            @foreach ($additionalParameters as $parameter)
+                @php
+                    $userParameter = $payment->eventAssistant->eventParameters
+                        ->where('event_id', $payment->eventAssistant->event_id)
+                        ->where('additional_parameter_id', $parameter['id'])
+                        ->first();
+                @endphp
+                <p class=""><strong>{{ ucfirst(str_replace('_', ' ', $parameter['name'])) }}</strong>:
+                    {{ $userParameter ? $userParameter->value : '-' }}</p>
             @endforeach
             <br>
             <h1 class="text-lg font-medium mt-5">Información del Evento</h1>
@@ -68,22 +75,27 @@
             <br>
             <h3 class="text-lg font-medium mt-5">Características del Ticket</h3>
             <ul>
-                <strong>Nombre:</strong> {{ $payment->eventAssistant->ticketType?->name ?? "SIN REGISTRO"  }} <br>
-                <strong>Caracteristicas:</strong>
-                @foreach ($payment->eventAssistant?->ticketType?->features as $feature)
-                        {{ $feature->name }},
-                @endforeach
-                <br>
+                <strong>Nombre:</strong> {{ $payment->eventAssistant->ticketType?->name ?? 'SIN REGISTRO' }} <br>
+                <strong>Características:</strong>
+                @if (!empty($payment->eventAssistant?->ticketType?->features))
+                    @foreach (explode(',', $payment->eventAssistant->ticketType->features) as $feature)
+                        {{ trim($feature) }},
+                    @endforeach
+                @else
+                    <em>No hay características</em>
+                @endif
                 <strong>Precio:</strong> ${{ $payment->eventAssistant->ticketType?->formattedPrice() }}
             </ul>
             <br>
             @if ($payment->payment_proof)
                 <div class="mb-4">
                     <h1>Comrpobante pago</h1>
-                    <img class="w-100 h-100" src="{{ public_path('storage/' . $payment->payment_proof) }}" alt="Comprobante pago">
+                    <img class="w-100 h-100" src="{{ public_path('storage/' . $payment->payment_proof) }}"
+                        alt="Comprobante pago">
                 </div>
             @endif
         </div>
     </div>
 </body>
+
 </html>

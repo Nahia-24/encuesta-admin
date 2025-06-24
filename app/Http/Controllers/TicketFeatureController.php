@@ -1,119 +1,164 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\ticket_features;
-use Illuminate\Http\Request;
-use App\Http\Requests;
+
 use App\Models\TicketFeatures;
+use Illuminate\Http\Request;
 use App\Models\TicketType;
 use App\Models\Product;
+use App\Models\TicketFeatureOption;
+use App\Models\EventAssistant;
+use App\Models\Event;
+use App\Models\TicketCharacteristic;
 use Spatie\Permission\Models\Role;
 use Illuminate\View\View;
 
 class TicketFeatureController extends Controller
 {
-    //
-    public function index():view{
-        
+    public function index(): View
+    {
         $roles = Role::all();
+
         $query = TicketFeatures::query();
 
-        $featuredCategories = TicketFeatures::select('id', 'name')
-            ->where('featured', true)
-            ->get();
-        // Obtener los productos que pertenecen a las categorías destacadas
-        //$products = TicketType::whereIn('ticket_feature_id', $featuredCategories->pluck('id'))->get();
-        // $products = Product::whereIn('ticket_feature_id', TicketFeatures::select('id')->featured())->get();
+        $featuredCategories = TicketFeatures::where('featured', true)->pluck('id');
+
+        $ticketTypesWithFeaturedFeatures = TicketType::whereHas('features', function ($q) use ($featuredCategories) {
+            $q->whereIn('ticket_features.id', $featuredCategories);
+        })->get();
+
+        $ticketTypes = TicketType::with('characteristics')->get();
+        $dataGeneral = [];
+
+        foreach ($ticketTypes as $ticket) {
+            $event = Event::find($ticket->event_id);
+            $sold = EventAssistant::where('ticket_type_id', $ticket->id)->where('has_entered', true)->count();
+            $available = $ticket->capacity - $sold;
+
+            $dataGeneral[$ticket->id] = [
+                'availableTickets' => $available,
+                'soldTickets' => $sold,
+                'capacity' => $ticket->capacity,
+                'eventName' => $event ? $event->name : 'Sin evento'
+            ];
+        }
 
         if (request('search')) {
-            $query
-                ->where('name', 'like', '%' . request('search') . '%');
+            $query->where('name', 'like', '%' . request('search') . '%');
         }
-                // Obtener los departamentos
-        $tickets=$query->paginate(30);
-        return view('ticketFeatures.index',compact(['roles', 'tickets']));
 
+        $tickets = $query->paginate(30);
+
+        return view('ticketFeatures.index', compact([
+            'roles',
+            'tickets',
+            'ticketTypesWithFeaturedFeatures',
+            'dataGeneral'
+        ]));
     }
 
-    public function create(){
-
-        $tickets=TicketFeatures::all();
+    public function create()
+    {
+        $characteristics = TicketCharacteristic::all();
         $roles = Role::all();
-        return view('ticketFeatures.create',compact(['roles', 'tickets']));
+        $ticketTypes = TicketType::all(); // <-- FALTABA ESTO
 
+        return view('ticketFeatures.create', compact('roles', 'ticketTypes', 'characteristics'));
+    }
+    public function edit($id)
+    {
+        $ticket = TicketFeatures::with(['characteristics', 'ticketTypes'])->findOrFail($id);
+        $roles = Role::all();
+        $ticketTypes = TicketType::all();
+        $characteristics = TicketCharacteristic::all();
 
+        return view('ticketFeatures.update', compact('roles', 'ticketTypes', 'ticket', 'characteristics'));
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'characteristics' => 'nullable|array',
+            'ticket_types' => 'nullable|array',
+        ]);
 
-    public function edit($id){
+        // 🔁 Procesar características
+        $characteristicIds = [];
+        foreach ($request->characteristics ?? [] as $item) {
+            if (is_numeric($item)) {
+                $characteristicIds[] = (int) $item;
+            } else {
+                // Es una nueva característica
+                $newChar = TicketCharacteristic::create(['name' => $item]);
+                $characteristicIds[] = $newChar->id;
+            }
+        }
 
+        // 🔁 Procesar tipos de ticket
+        $ticketTypeIds = [];
+        foreach ($request->ticket_types ?? [] as $item) {
+            if (is_numeric($item)) {
+                $ticketTypeIds[] = (int) $item;
+            } else {
+                // Es un nuevo tipo de ticket (por simplicidad, puedes ajustar valores por defecto)
+                $newType = TicketType::create([
+                    'name' => $item,
+                    'price' => 0,
+                    'capacity' => 0,
+                    'event_id' => 1, // Ajusta este valor según contexto
+                ]);
+                $ticketTypeIds[] = $newType->id;
+            }
+        }
+
+        // Crear el ticket (TicketFeatures)
+        $ticket = TicketFeatures::create([
+            'name' => $validated['name'],
+        ]);
+
+        // Relacionar
+        $ticket->ticketTypes()->sync($ticketTypeIds);
+
+        foreach ($ticket->ticketTypes as $type) {
+            $type->characteristics()->syncWithoutDetaching($characteristicIds);
+        }
+
+        return redirect()->route('ticketFeatures.index')->with('success', 'Ticket creado con éxito.');
+    }
+
+    public function update(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:ticket_features,id',
+            'name' => 'required|string|max:255',
+            'characteristics' => 'nullable|array',
+            'characteristics.*' => 'exists:ticket_characteristics,id',
+            'ticket_types' => 'nullable|array',
+            'ticket_types.*' => 'exists:ticket_types,id',
+        ]);
+
+        $ticket = TicketFeatures::findOrFail($request->id);
+        $ticket->name = $request->name;
+        $ticket->save();
+
+        $ticket->characteristics()->sync($request->characteristics ?? []);
+
+        $ticket->ticketTypes()->sync($request->ticket_types ?? []);
+
+        return redirect()->route('ticketFeatures.index')->with('success', 'Ticket actualizado con éxito.');
+    }
+
+    public function delete($id)
+    {
         $ticket = TicketFeatures::find($id);
-        $roles = Role::all();
-        return view('ticketFeatures.update', compact(['roles', 'ticket']));
-        
 
-    }
-
-    public function store(Request $request){
-
-        $request->validate([
-            
-            'name' => 'required|string|max:255'
-                       
-        ]);
-
-        $ticketFeatures = new TicketFeatures();
-        $ticketFeatures->name = $request->name;
-        $ticketFeatures->save();
-
-        $roles = Role::all();
-        $tickets = TicketFeatures::all();
-        return view('ticketFeatures.index',compact(['roles', 'tickets']));
-
-
-    }
-
-    public function update(Request $request){
-
-        $ticketid = $request->id;
-        $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-        
-        $tickets = TicketFeatures::findOrFail($ticketid);
-        $tickets->name = $request->name;
-    
-        $tickets->save();
-
-        $roles = Role::all();
-        $tickets = TicketFeatures::all();
-        return view('ticketFeatures.index',compact(['roles', 'tickets']));
-
-
-    }
-
-    public function delete($id){
-
-        $ticket=TicketFeatures::find($id);
-        if (!$ticket)
-        {   $data=[
-                'message'=>'Ticket no no Encontrado',
-                'status'=>404
-                    
-               ];
-            return redirect()->route('ticketFeatures.index')->with('404', 'Ticket no no Encontrado');
-            };
-            $ticket->delete();
-
-           
-        $data=[
-            'message'=>'ticket Eliminada',
-            'status'=>201
-        ];
-        return redirect()->route('ticketFeatures.index')->with('201', 'Ticket Eliminado');
-        $roles = Role::all();
-        $tickets = TicketFeatures::all(); // Obtener las ciudades
-        return view('ticketFeatures.index', compact(['roles', 'tickets']));
+        if (!$ticket) {
+            return redirect()->route('ticketFeatures.index')->with('error', 'Ticket no encontrado');
         }
 
+        $ticket->delete();
+
+        return redirect()->route('ticketFeatures.index')->with('success', 'Ticket eliminado');
+    }
 }

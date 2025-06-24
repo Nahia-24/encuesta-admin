@@ -27,9 +27,18 @@ class TicketFeatures extends Model
         return $this->belongsToMany(TicketType::class, 'ticket_type_feature');
     }
 
+    public function characteristics()
+    {
+        return $this->belongsToMany(
+            TicketCharacteristic::class,
+            'characteristic_ticket_feature',
+            'ticket_feature_id',
+            'ticket_characteristic_id'
+        );
+    }
+
     public function scopeFeatured($query)
     {
         return $query->where('featured', true);
     }
-
 }

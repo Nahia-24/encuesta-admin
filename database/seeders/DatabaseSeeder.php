@@ -22,9 +22,11 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            RolesAndPermissionsSeeder::class,
-            AdminUserSeeder::class,
+            
             DepartmentCitySeeder::class,
+            AdminUserSeeder::class,
+            RolesAndPermissionsSeeder::class,
+            TicketFeatureOptionSeeder::class,
         ]);
     }
 }

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Departament;
+use App\Models\User;
 
 class EventAssistant extends Model
 {
@@ -23,6 +25,7 @@ class EventAssistant extends Model
         'rejected_time',
         'guardian_id',
         'is_paid',
+        'department_id',       
     ];
 
     public function event()
@@ -32,7 +35,7 @@ class EventAssistant extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function ticketType()
@@ -44,9 +47,10 @@ class EventAssistant extends Model
     public function eventParameters()
     {
         return $this->hasMany(UserEventParameter::class, 'user_id', 'user_id')
-                    ->where('event_id', $this->event_id);
+            ->where('event_id', $this->event_id);
     }
 
+    // Define la relación con los pagos
     public function payments()
     {
         return $this->hasMany(Payment::class);
@@ -74,5 +78,10 @@ class EventAssistant extends Model
     public function featureConsumptions()
     {
         return $this->hasMany(FeatureConsumption::class, 'event_assistant_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Departament::class);
     }
 }

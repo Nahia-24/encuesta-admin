@@ -1,7 +1,7 @@
 @extends('../themes/' . $activeTheme . '/' . $activeLayout)
 
 @section('subhead')
-    <title>Departamento</title>
+    <title>Departamentos</title>
 @endsection
 
 @section('subcontent')
@@ -9,124 +9,69 @@
     <div class="mt-5 grid grid-cols-12 gap-6">
         <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center sm:flex-nowrap">
             <a href="{{ route('department.create') }}">
-                <x-base.button
-                    class="mr-2 shadow-md"
-                    variant="primary"
-                >
-                    Crear nuevo departamento
+                <x-base.button class="mr-2 shadow-md" variant="primary">
+                    Crear nuevo Departamento
                 </x-base.button>
             </a>
             <x-base.menu>
-                <x-base.menu.button
-                    class="!box px-2"
-                    as="x-base.button"
-                >
+                <x-base.menu.button class="!box px-2" as="x-base.button">
                     <span class="flex h-5 w-5 items-center justify-center">
-                        <x-base.lucide
-                            class="h-4 w-4"
-                            icon="Plus"
-                        />
+                        <x-base.lucide class="h-4 w-4" icon="Plus" />
                     </span>
                 </x-base.menu.button>
                 <x-base.menu.items class="w-40">
                     <x-base.menu.item>
-                        <x-base.lucide
-                            class="mr-2 h-4 w-4"
-                            icon="Printer"
-                        /> Imprimir
+                        <x-base.lucide class="mr-2 h-4 w-4" icon="Printer" /> Imprimir
                     </x-base.menu.item>
                     <x-base.menu.item>
-                        <x-base.lucide
-                            class="mr-2 h-4 w-4"
-                            icon="FileText"
-                        /> Exportar a
-                        Excel
+                        <x-base.lucide class="mr-2 h-4 w-4" icon="FileText" /> Exportar a Excel
                     </x-base.menu.item>
                     <x-base.menu.item>
-                        <x-base.lucide
-                            class="mr-2 h-4 w-4"
-                            icon="FileText"
-                        /> Exportar a
-                        PDF
+                        <x-base.lucide class="mr-2 h-4 w-4" icon="FileText" /> Exportar a PDF
                     </x-base.menu.item>
                 </x-base.menu.items>
             </x-base.menu>
-            {{-- <div class="mx-auto hidden text-slate-500 md:block">
-                Showing {1} to {10} of {150} entries
-            </div> --}}
             <div class="mt-3 w-full sm:ml-auto sm:mt-0 sm:w-auto md:ml-0">
-                <div class="relative w-56 text-slate-500">
-                    <x-base.form-input
-                        class="!box w-56 pr-10"
-                        type="text"
-                        placeholder="Search..."
-                    />
-                    <x-base.lucide
-                        class="absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"
-                        icon="Search"
-                    />
-                </div>
+                <form method="GET" action="{{ route('department.index') }}" class="relative w-56 text-slate-500">
+                    <x-base.form-input name="search" value="{{ request('search') }}" class="!box w-56 pr-10" type="text"
+                        placeholder="Buscar..." />
+                    <button type="submit" class="absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4">
+                        <x-base.lucide icon="Search" />
+                    </button>
+                </form>
             </div>
         </div>
+
         <!-- BEGIN: Data List -->
         <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
             <x-base.table class="-mt-2 border-separate border-spacing-y-[10px]">
                 <x-base.table.thead>
-                    <x-base.table.tr>                        
-                        <x-base.table.th class="whitespace-nowrap border-b-0">
-                            id
-                        </x-base.table.th>
-                        <x-base.table.th class="whitespace-nowrap border-b-0 text-center">
-                           Codigo Dane
-                        </x-base.table.th>
-                        <x-base.table.th class="whitespace-nowrap border-b-0 text-center">
-                           Departamento
-                        </x-base.table.th>
-                        <x-base.table.th class="whitespace-nowrap border-b-0 text-center">
-                            Acciones
-                        </x-base.table.th>
+                    <x-base.table.tr>
+                        <x-base.table.th class="whitespace-nowrap border-b-0">ID</x-base.table.th>
+                        <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Código DANE</x-base.table.th>
+                        <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Departamento</x-base.table.th>
+                        <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Acciones</x-base.table.th>
                     </x-base.table.tr>
                 </x-base.table.thead>
                 <x-base.table.tbody>
                     @foreach ($departments as $department)
-                        <x-base.table.tr class="intro-x">
-                           
+                        <x-base.table.tr class="intro-x bg-white dark:bg-darkmode-600 rounded-[0.6rem] shadow-sm">
                             <x-base.table.td
-                                class="box rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600"
-                            >
-                                    {{ $department->id }}
-                               
-                            </x-base.table.td>
+                                class="border-y-0 first:rounded-l-[0.6rem] align-middle">{{ $department->id }}</x-base.table.td>
                             <x-base.table.td
-                                class="box rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600"
-                            >
-                                    {{ $department->code_dane}}
-                               
-                            </x-base.table.td>
+                                class="text-center border-y-0 align-middle">{{ $department->code_dane }}</x-base.table.td>
                             <x-base.table.td
-                                class="box rounded-l-none rounded-r-none border-x-0 text-center shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600"
-                            >
-                                {{ $department->name }}
-                            </x-base.table.td>                            
-                            <x-base.table.td @class([
-                                'box w-56 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600',
-                                'before:absolute before:inset-y-0 before:left-0 before:my-auto before:block before:h-8 before:w-px before:bg-slate-200 before:dark:bg-darkmode-400',
-                            ])>
-                                <div class="flex items-center justify-center">                                    
-                                  
-                                    <a class="mr-3 flex items-center" href="{{ route('department.edit', ['id' => $department->id]) }}">                                        
-                                        Editar
+                                class="text-center border-y-0 align-middle">{{ $department->name }}</x-base.table.td>
+                            <x-base.table.td class="text-center border-y-0 align-middle">
+                                <div class="flex justify-center gap-3">
+                                    <a href="{{ route('department.edit', ['id' => $department->id]) }}"
+                                        class="flex items-center text-primary font-medium hover:underline">
+                                        <x-base.lucide class="w-4 h-4 mr-1" icon="Edit" /> Editar
                                     </a>
-                                    <a
-                                        class="flex items-center text-danger"
-                                        data-tw-toggle="modal"
-                                        data-tw-target="#delete-confirmation-modal"
-                                        href="{{ route('department.delete', ['id' => $department->id]) }}"
-                                    >
-                                        <x-base.lucide
-                                            class="mr-1 h-4 w-4"
-                                            icon="Trash"
-                                        /> Borrar
+                                    <a href="{{ route('department.delete', ['id' => $department->id]) }}"
+                                        class="flex items-center text-danger font-medium hover:underline"
+                                        data-tw-toggle="modal" data-tw-target="#delete-confirmation-modal">
+                                        <x-base.lucide class="w-4 h-4 mr-1" icon="Trash" /> Borrar
                                     </a>
                                 </div>
                             </x-base.table.td>
@@ -136,77 +81,31 @@
             </x-base.table>
         </div>
         <!-- END: Data List -->
+
         <!-- BEGIN: Pagination -->
-        {{-- <div class="intro-y col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap">
-            <x-base.pagination class="w-full sm:mr-auto sm:w-auto">
-                <x-base.pagination.link>
-                    <x-base.lucide
-                        class="h-4 w-4"
-                        icon="ChevronsLeft"
-                    />
-                </x-base.pagination.link>
-                <x-base.pagination.link>
-                    <x-base.lucide
-                        class="h-4 w-4"
-                        icon="ChevronLeft"
-                    />
-                </x-base.pagination.link>
-                <x-base.pagination.link>...</x-base.pagination.link>
-                <x-base.pagination.link>1</x-base.pagination.link>
-                <x-base.pagination.link active>2</x-base.pagination.link>
-                <x-base.pagination.link>3</x-base.pagination.link>
-                <x-base.pagination.link>...</x-base.pagination.link>
-                <x-base.pagination.link>
-                    <x-base.lucide
-                        class="h-4 w-4"
-                        icon="ChevronRight"
-                    />
-                </x-base.pagination.link>
-                <x-base.pagination.link>
-                    <x-base.lucide
-                        class="h-4 w-4"
-                        icon="ChevronsRight"
-                    />
-                </x-base.pagination.link>
-            </x-base.pagination>
-            <x-base.form-select class="!box mt-3 w-20 sm:mt-0">
-                <option>10</option>
-                <option>25</option>
-                <option>35</option>
-                <option>50</option>
-            </x-base.form-select>
-        </div> --}}
+        <div class="intro-y col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap mt-4">
+            {{ $departments->withQueryString()->links() }}
+        </div>
         <!-- END: Pagination -->
     </div>
+
     <!-- BEGIN: Delete Confirmation Modal -->
     <x-base.dialog id="delete-confirmation-modal">
         <x-base.dialog.panel>
             <div class="p-5 text-center">
-                <x-base.lucide
-                    class="mx-auto mt-3 h-16 w-16 text-danger"
-                    icon="XCircle"
-                />
-                <div class="mt-5 text-3xl">Are you sure?</div>
+                <x-base.lucide class="mx-auto mt-3 h-16 w-16 text-danger" icon="XCircle" />
+                <div class="mt-5 text-3xl">¿Estás seguro?</div>
                 <div class="mt-2 text-slate-500">
-                    Do you really want to delete these records? <br />
-                    This process cannot be undone.
+                    ¿Realmente deseas eliminar este registro? <br />
+                    Este proceso no se puede deshacer.
                 </div>
             </div>
             <div class="px-5 pb-8 text-center">
-                <x-base.button
-                    class="mr-1 w-24"
-                    data-tw-dismiss="modal"
-                    type="button"
-                    variant="outline-secondary"
-                >
-                    Cancel
+                <x-base.button class="mr-1 w-24" data-tw-dismiss="modal" type="button" variant="outline-secondary">
+                    Cancelar
                 </x-base.button>
-                <x-base.button
-                    class="w-24"
-                    type="button"
-                    variant="danger"
-                >
-                    Delete
+                <x-base.button class="w-24" type="button" variant="danger">
+                    Eliminar
                 </x-base.button>
             </div>
         </x-base.dialog.panel>

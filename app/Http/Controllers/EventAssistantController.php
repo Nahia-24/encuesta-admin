@@ -8,7 +8,7 @@ use App\Imports\AssistantsImport;
 use App\Models\AdditionalParameter;
 use App\Models\Departament;
 use App\Models\Event;
-use App\Models\EventAssistant;
+use App\Models\eventAssistant;
 use App\Models\FeatureConsumption;
 use App\Models\Payment;
 use App\Models\TicketFeatures;
@@ -28,11 +28,12 @@ use App\Models\Coupon;
 
 class EventAssistantController extends Controller
 {
-    public function index(Request $request, $idEvent){
+    public function index(Request $request, $idEvent)
+    {
         $event = Event::findOrFail($idEvent);
 
         // Número de asistentes registrados para el evento
-        $totalTickets = EventAssistant::where('event_id', $idEvent)->where('has_entered', true)->count();
+        $totalTickets = eventAssistant::where('event_id', $idEvent)->where('has_entered', true)->count();
         $tickets = TicketType::where('event_id', $idEvent)->get();
 
         // Capacidad total del evento
@@ -55,7 +56,7 @@ class EventAssistantController extends Controller
 
         foreach ($ticketTypes as $ticketType) {
             // Contar cuántos usuarios han ingresado con este tipo de ticket
-            $totalEntered = EventAssistant::where('event_id', $idEvent)
+            $totalEntered = eventAssistant::where('event_id', $idEvent)
                 ->where('ticket_type_id', $ticketType->id)
                 ->where('has_entered', true)
                 ->count();
@@ -74,30 +75,38 @@ class EventAssistantController extends Controller
             ];
         }
         // Aplicar búsqueda y paginación
-        $query = EventAssistant::where('event_id', $idEvent);
+        $query = eventAssistant::with([
+            'user',
+            'guardian',
+            'ticketType',
+            'department',
+            'eventParameters' => function ($query) use ($idEvent) {
+                $query->where('event_id', $idEvent);
+            }
+        ])->where('event_id', $idEvent);
 
         if ($request->has('search')) {
             $search = $request->input('search');
 
             $query->where(function ($q) use ($search) {
-            // Buscar en la relación 'user'
-            $q->whereHas('user', function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
+                // Buscar en la relación 'user'
+                $q->whereHas('user', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
                         ->orWhere('phone', 'like', "%{$search}%");
-            });
+                });
 
-            // Buscar en la relación 'ticketType'
-            $q->orWhereHas('ticketType', function ($query2) use ($search) {
-                $query2->where('name', 'like', "%{$search}%");
-            });
+                // Buscar en la relación 'ticketType'
+                $q->orWhereHas('ticketType', function ($query2) use ($search) {
+                    $query2->where('name', 'like', "%{$search}%");
+                });
 
-            // Verificar si 'search' contiene "Entrada" y filtrar por 'has_entered'
-            if (strtolower($search) === 'entrada') {
-                $q->orWhere('has_entered', 1); // Buscar entradas con valor 1
-            } elseif(strtolower($search) === 'no entrada') {
-                $q->orWhere('has_entered', 0); // Buscar entradas con valor 0
-            }
+                // Verificar si 'search' contiene "Entrada" y filtrar por 'has_entered'
+                if (strtolower($search) === 'entrada') {
+                    $q->orWhere('has_entered', 1); // Buscar entradas con valor 1
+                } elseif (strtolower($search) === 'no entrada') {
+                    $q->orWhere('has_entered', 0); // Buscar entradas con valor 0
+                }
             });
         }
 
@@ -116,9 +125,9 @@ class EventAssistantController extends Controller
     // Procesa el archivo de Excel y asigna los asistentes de forma masiva
     public function uploadMassAssign(Request $request, $idEvent)
     {
-        if($this->eventoFinalizado($idEvent)){
+        if ($this->eventoFinalizado($idEvent)) {
             return redirect()->back()
-                            ->with('messages', 'No se puede realizar está acción porque el evento ya ha sido finalizado');
+                ->with('messages', 'No se puede realizar está acción porque el evento ya ha sido finalizado');
         }
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:2048', // Validar que sea un archivo Excel
@@ -134,12 +143,12 @@ class EventAssistantController extends Controller
             $messages = $import->getMessages();
 
             return redirect()->route('eventAssistant.massAssign', $idEvent)
-                            ->with('success', 'Asistentes asignados exitosamente.')
-                            ->with('importedUsers', $importedUsers)
-                            ->with('messages', $messages);
+                ->with('success', 'Asistentes asignados exitosamente.')
+                ->with('importedUsers', $importedUsers)
+                ->with('messages', $messages);
         } catch (\Exception $e) {
             return redirect()->route('eventAssistant.massAssign', $idEvent)
-                            ->with('error', 'Hubo un error al procesar el archivo: ' . $e->getMessage());
+                ->with('error', 'Hubo un error al procesar el archivo: ' . $e->getMessage());
         }
     }
 
@@ -155,9 +164,9 @@ class EventAssistantController extends Controller
 
     public function uploadSingleAssign(Request $request, $eventId)
     {
-        if($this->eventoFinalizado($eventId)){
+        if ($this->eventoFinalizado($eventId)) {
             return redirect()->route('eventAssistant.index', $eventId)
-            ->with('success', 'No se puede realizar está acción porque el evento ya ha sido finalizado.');
+                ->with('success', 'No se puede realizar está acción porque el evento ya ha sido finalizado.');
         }
         // Validar los datos recibidos
         $validatedData = $request->validate([
@@ -191,41 +200,43 @@ class EventAssistantController extends Controller
 
         // Redirigir con un mensaje de éxito
         return redirect()->route('eventAssistant.index', $eventId)
-        ->with('success', 'Asistentes asignados exitosamente.');
+            ->with('success', 'Asistentes asignados exitosamente.');
     }
 
     public function singleCreateForm($idEvent)
     {
-        $event = Event::find($idEvent);
+        $event = Event::findOrFail($idEvent);
+
         $additionalParameters = json_decode($event->additionalParameters, true) ?? [];
         $departments = Departament::all();
-        $event = Event::findOrFail($idEvent);
+        // Obtener el evento por su ID
         $ticketTypes  = TicketType::where('event_id', $idEvent)->get();
         // Obtener asistentes mayores de 18 años con número de documento
         $guardians = EventAssistant::where('event_id', $idEvent)
             ->whereHas('user', function ($query) {
                 $query->whereNotNull('document_number')
                     ->where('birth_date', '<=', now()->subYears(18))
-                    ; // Filtrar mayores de 18
+                ; // Filtrar mayores de 18
             })
             ->with(['user' => function ($query) {
                 $query->select('id', 'name', 'document_number'); // Seleccionar solo los campos requeridos
             }])
-        ->get();
+            ->get();
         return view('eventAssistant.singleCreate', compact('event', 'departments', 'ticketTypes', 'additionalParameters', 'guardians'));
     }
 
     public function singleCreateUpload(Request $request, $idEvent)
     {
-        if($this->eventoFinalizado($idEvent)){
+        if ($this->eventoFinalizado($idEvent)) {
             return redirect()->back()
-            ->with('success', 'No se puede realizar está acción porque el evento ya ha sido finalizado.');
+                ->with('success', 'No se puede realizar esta acción porque el evento ya ha sido finalizado.');
         }
+
         $event = Event::find($idEvent);
 
         $registrationParameters = json_decode($event->registration_parameters, true) ?? [];
 
-        // Construir reglas de validación dinámicas
+        // Reglas de validación
         $validationRules = [];
         foreach ($registrationParameters as $param) {
             switch ($param) {
@@ -243,54 +254,53 @@ class EventAssistantController extends Controller
                     $validationRules[$param] = 'required|string|max:20';
                     break;
                 case 'phone':
-                    $validationRules[$param] = 'nullable|string|max:15'; // Suponiendo que es opcional
+                    $validationRules[$param] = 'nullable|string|max:15';
+                    break;
+                case 'department_id':
+                    $validationRules[$param] = 'nullable|exists:departments,id';
                     break;
                 case 'city_id':
-                    $validationRules[$param] = 'nullable|exists:cities,id'; // Asegúrate de que la ciudad exista
+                    $validationRules[$param] = 'nullable|exists:cities,id';
                     break;
                 case 'birth_date':
-                    $validationRules[$param] = 'nullable|date'; // Opcional, formato de fecha
+                    $validationRules[$param] = 'nullable|date';
                     break;
-                // Agrega más parámetros según sea necesario
             }
         }
 
-        // Validar el request
+
         $validatedData = $request->validate($validationRules);
 
+        // Buscar usuario existente
+        $user = null;
         if ($request->has('email') || $request->has('document_number')) {
-            // Verificar si el usuario ya existe por correo o número de documento
+
             $user = User::where('email', $request->email)
-            ->orWhere('document_number', $request->document_number)
-            ->first();
+                ->orWhere('document_number', $request->document_number)
+                ->first();
         }
 
-        if ($user) {
-            // Actualizar el usuario existente
-            $user->update($validatedData);
-        } else {
-            // Si no existe, crear un nuevo usuario
-            $userFillableColumns = (new User())->getFillable(); // Obtener las columnas permitidas
-            $createData = []; // Inicializar el array para los datos de creación
+        // Si no existe, crearlo
+        if (!$user) {
+            $userFillableColumns = (new User())->getFillable();
+            $createData = [];
 
             foreach ($userFillableColumns as $column) {
                 if ($request->has($column)) {
                     $createData[$column] = $request[$column];
                 }
             }
+
             $createData['status'] = false;
             $user = User::create($createData);
-        }
-
-        // Verificar si el usuario tiene el rol de 'assistant', si no, asignarlo
-        if (!$user->hasRole('assistant')) {
-            $assistantRole = Role::firstOrCreate(['name' => 'assistant']); // Crear el rol si no existe
+            // Asignar rol solo si es nuevo
+            $assistantRole = Role::firstOrCreate(['name' => 'assistant']);
             $user->assignRole($assistantRole);
         }
-        $guardianId = $request->input('guardian_id') ?? null; // Asegúrate de que tu formulario tenga este campo
+        // Asociar en tabla intermedia
+        $guardianId = $request->input('guardian_id') ?? null;
 
-        // Crear el registro en la tabla `event_assistant` si no existe
-        $eventAssistant = EventAssistant::firstOrCreate(
+        EventAssistant::firstOrCreate(
             [
                 'event_id' => $event->id,
                 'user_id' => $user->id,
@@ -298,16 +308,16 @@ class EventAssistantController extends Controller
             [
                 'ticket_type_id' => $request['id_ticket'] ?? null,
                 'has_entered' => false,
-                'guardian_id' => $guardianId,
+                'guardian_id' => $guardianId ?? null,
+                'department_id' => $request['department_id'] ?? null, 
             ]
         );
 
-        // Obtener los parámetros adicionales definidos para el evento
+        // Agregar parámetros adicionales si aplica
         $definedParameters = AdditionalParameter::where('event_id', $event->id)->get();
-        // Obtener las columnas definidas en $fillable del modelo User
+
         $userFillableColumns = (new User())->getFillable();
-        // Detectar y almacenar parámetros adicionales enviados en el registro
-        $additionalParameters = $request->except(array_merge(['_token'], $userFillableColumns)); // Excluir columnas del modelo User
+        $additionalParameters = $request->except(array_merge(['_token'], $userFillableColumns));
 
         foreach ($definedParameters as $definedParameter) {
             if (isset($additionalParameters[$definedParameter->name])) {
@@ -320,16 +330,20 @@ class EventAssistantController extends Controller
             }
         }
 
-        return redirect()->route('eventAssistant.singleCreateForm', $idEvent)->with('success', 'Inscripción exitosa.');
+        return redirect()->route('eventAssistant.singleCreateForm', $idEvent)
+            ->with('success', 'Inscripción exitosa.');
     }
 
-    public function edit($idEventAssistant){
-        $eventAssistant = EventAssistant::find($idEventAssistant);
+
+    public function edit($idEventAssistant)
+    {
+        $eventAssistant = EventAssistant::findOrFail($idEventAssistant);
         $userEventParameter = UserEventParameter::where('user_id', $eventAssistant->user_id)->where('event_id', $eventAssistant->event_id)->get();
         // return $userEventParameter[0]->value;
-        $event = Event::find($eventAssistant->event_id);
+        $event = Event::findOrFail($eventAssistant->event_id);
         $additionalParameters = json_decode($event->additionalParameters, true) ?? [];
         $departments = Departament::all();
+        $currentCity = $eventAssistant->user->city ?? null;
         $event = Event::findOrFail($event->id);
         $ticketTypes  = TicketType::where('event_id', $event->id)->get();
         // Obtener asistentes mayores de 18 años con número de documento
@@ -337,76 +351,56 @@ class EventAssistantController extends Controller
             ->whereHas('user', function ($query) {
                 $query->whereNotNull('document_number')
                     ->where('birth_date', '<=', now()->subYears(18))
-                    ; // Filtrar mayores de 18
+                ; // Filtrar mayores de 18
             })
             ->with(['user' => function ($query) {
                 $query->select('id', 'name', 'document_number'); // Seleccionar solo los campos requeridos
             }])
-        ->get();
-        return view('eventAssistant.editAssistant', compact('event', 'departments', 'ticketTypes', 'additionalParameters', 'eventAssistant', 'userEventParameter', 'guardians'));
+            ->get();
+        return view('eventAssistant.editAssistant', compact('event', 'departments', 'ticketTypes', 'additionalParameters', 'eventAssistant', 'userEventParameter', 'guardians','currentCity'));
     }
 
     public function singleUpdateUpload(Request $request, $idEventAssistant)
     {
         $eventAssistant = EventAssistant::find($idEventAssistant);
         $idEvent = $eventAssistant->event_id;
-        if($this->eventoFinalizado($idEvent)){
+
+        if ($this->eventoFinalizado($idEvent)) {
             return redirect()->back()
-            ->with('success', 'No se puede realizar está acción porque el evento ya ha sido finalizado.');
+                ->with('success', 'No se puede realizar esta acción porque el evento ya ha sido finalizado.');
         }
-        // Encontrar el evento por su ID
+
+        // Obtener el evento y el usuario asociados
         $event = Event::findOrFail($idEvent);
 
-        // Encontrar el usuario por su ID
         $user = User::findOrFail($eventAssistant->user_id);
-        // return "prueba";
-        // Validar la solicitud
-        // $request->validate([
-        //     'name' => 'required|string|max:255',
-        //     'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-        //     'type_document' => 'required|string|max:3',
-        //     'document_number' => 'required|string|max:20|unique:users,document_number,' . $user->id,
-        // ]);
+        // ⚠️ OMITIR la actualización del usuario
+        // $updateData = [];
+        // $userFillableColumns = (new User())->getFillable();
+        // foreach ($userFillableColumns as $column) {
+        //     if ($request->has($column)) {
+        //         $updateData[$column] = $request[$column];
+        //     }
+        // }
+        // $user->update($updateData);
 
-        // Inicializar un arreglo para almacenar los datos a actualizar
-        $updateData = [];
+        $guardianId = $request->input('guardian_id') ?? null;
 
-        // Obtener las columnas definidas en $fillable del modelo User
-        $userFillableColumns = (new User())->getFillable();
+        // ✅ Actualizar solo la información del asistente
+        $eventAssistant->update([
+            'ticket_type_id' => $request['id_ticket'] ?? null,
+            'guardian_id' => $guardianId,
+        ]);
 
-        // Recorrer las columnas permitidas y verificar si están presentes en el request
-        foreach ($userFillableColumns as $column) {
-            if ($request->has($column)) {
-                $updateData[$column] = $request[$column];
-            }
-        }
-
-        // Actualizar los datos del usuario de manera dinámica
-        $user->update($updateData);
-
-        $guardianId = $request->input('guardian_id') ?? null; // Asegúrate de que tu formulario tenga este campo
-        // Actualizar o crear el registro en la tabla `event_assistant`
-        $eventAssistant = EventAssistant::updateOrCreate(
-            [
-                'event_id' => $event->id,
-                'user_id' => $user->id,
-            ],
-            [
-                'ticket_type_id' => $request['id_ticket'] ?? null,
-                'guardian_id' => $guardianId,
-            ]
-        );
-
-        // Obtener los parámetros adicionales definidos para el evento
+        // ✅ Actualizar o crear parámetros adicionales
         $definedParameters = AdditionalParameter::where('event_id', $event->id)->get();
-        // Obtener las columnas definidas en $fillable del modelo User
-        $userFillableColumns = (new User())->getFillable();
-        // Detectar y almacenar parámetros adicionales enviados en el registro
-        $additionalParameters = $request->except(array_merge(['_token'], $userFillableColumns)); // Excluir columnas del modelo User
 
+        $userFillableColumns = (new User())->getFillable();
+
+        $additionalParameters = $request->except(array_merge(['_token'], $userFillableColumns));
         foreach ($definedParameters as $definedParameter) {
             if (isset($additionalParameters[$definedParameter->name])) {
-                // Actualizar o crear el parámetro adicional del usuario
+
                 UserEventParameter::updateOrCreate(
                     [
                         'event_id' => $event->id,
@@ -422,9 +416,9 @@ class EventAssistantController extends Controller
 
 
         return redirect()->route('eventAssistant.index', $idEvent)
-        ->with('success', 'Actualización exitosa.');
-        // return redirect()->route('eventAssistant.singleUpdateForm', [$idEventAssistant])->with('success', 'Actualización exitosa.');
+            ->with('success', 'Actualización exitosa.');
     }
+
 
     public function singleDelete($idEventAssistant)
     {
@@ -469,7 +463,7 @@ class EventAssistantController extends Controller
         // Buscar el asistente por su ID
         $eventAssistant = EventAssistant::findOrFail($id);
 
-        if($eventAssistant->guid != $public_link){
+        if ($eventAssistant->guid != $public_link) {
             abort(404); // Devuelve un error 404 Not Found
         }
         // Verificar si el usuario está autenticado
@@ -527,7 +521,7 @@ class EventAssistantController extends Controller
                 'success' => $successMessage,
                 'error' => 'Aforo máximo alcanzado o superado para el tipo de Boleta "' . $ticketType->name . '". Se han registrado ' . $currentTicketCount . " entradas y la capacidad máxima es de " . $ticketType->capacity . "."
             ]);
-        }else{
+        } else {
             return redirect()->back()->with('success', $successMessage);
         }
     }
@@ -557,7 +551,7 @@ class EventAssistantController extends Controller
         $pdf = Pdf::loadView('pdf.assistant', compact('asistente', 'evento', 'qrCodeBase64'));
 
         //se muestra en una nueva ventana
-        return $pdf->stream('asistente_'.$asistente->user->name.'_evento_'.$evento->name.'.pdf');
+        return $pdf->stream('asistente_' . $asistente->user->name . '_evento_' . $evento->name . '.pdf');
         // Se descarga,
         // return $pdf->download('Asistente_Evento_' . $asistente->user->name . '.pdf');
     }
@@ -613,10 +607,11 @@ class EventAssistantController extends Controller
         $export = new TemplateExport($registration_parameters);
 
         // Descargar el archivo Excel
-        return Excel::download($export, 'plantilla_asistentes-'.$event->name.'.xlsx');
+        return Excel::download($export, 'plantilla_asistentes-' . $event->name . '.xlsx');
     }
 
-    public function specificSearch($idEvent){
+    public function specificSearch($idEvent)
+    {
         $eventAssistant = EventAssistant::where('event_id', $idEvent)->get();
         $event = Event::find($idEvent);
         $additionalParameters = json_decode($event->additionalParameters, true) ?? [];
@@ -626,9 +621,10 @@ class EventAssistantController extends Controller
         return view('eventAssistant.specificSearch', compact('event', 'departments', 'ticketTypes', 'additionalParameters'));
     }
 
-    public function specificSearchUploead(Request $request, $idEvent){
+    public function specificSearchUploead(Request $request, $idEvent)
+    {
         // Obtener los campos de búsqueda del request y eliminar aquellos con valores nulos
-        $input = array_filter($request->except('_token'), function($value) {
+        $input = array_filter($request->except('_token'), function ($value) {
             return !is_null($value); // Filtra inputs que no sean null
         });
 
@@ -696,11 +692,12 @@ class EventAssistantController extends Controller
         // Exportar el archivo Excel usando los datos proporcionados
         return Excel::download(
             new EventAssistantsExport($idEvent, $selectedFields, $additionalParameters, $search),
-            'asistentes_de_'.$event->name.'_'.date('d-m-Y').'.xlsx'
+            'asistentes_de_' . $event->name . '_' . date('d-m-Y') . '.xlsx'
         );
     }
 
-    public function sendMsg($idEvent){
+    public function sendMsg($idEvent)
+    {
         $eventAssistants = EventAssistant::where('event_id', $idEvent)->get();
         // Obtener todos los asistentes del evento
         $eventAssistants = EventAssistant::where('event_id', $idEvent)->get();
@@ -721,7 +718,8 @@ class EventAssistantController extends Controller
         }
     }
 
-    public function sendEmail($id){
+    public function sendEmail($id)
+    {
         // Buscar el registro de EventAssistant por ID
         $eventAssistant = EventAssistant::find($id);
 
@@ -735,49 +733,54 @@ class EventAssistantController extends Controller
         // return $email;
 
         // Enviar el correo
-        Mail::send('emails.assistant',
-        ['eventAssistant' => $eventAssistant]
-        , function($message) use ($email) {
-            $message->to($email)
+        Mail::send(
+            'emails.assistant',
+            ['eventAssistant' => $eventAssistant],
+            function ($message) use ($email) {
+                $message->to($email)
                     ->subject('Información del evento');
-        });
+            }
+        );
 
         return response()->json(['message' => 'Email enviado a ' . $email]);
     }
 
-    public function eventoFinalizado ($idEvent){
+    public function eventoFinalizado($idEvent)
+    {
         return Event::find($idEvent)->status == 4 ? true : false;
     }
 
-    public function payment($id){
+    public function payment($id)
+    {
         $eventAssistant = EventAssistant::find($id);
         return view('eventAssistant.payment', compact('eventAssistant'));
     }
-
-    public function paymentStore(Request $request){
-
+    public function paymentStore(Request $request)
+    {
         $request->validate([
             'payer_name' => 'required|string|max:255',
             'payer_document_type' => 'required|string|max:10',
             'payer_document_number' => 'required|string|max:50',
             'amount' => 'required|numeric',
-            'payment_method' => 'nullable|string',
-            'payment_proof' => 'nullable|image|max:2048', // Validación de la imagen
-            'courtesy_code' => 'nullable|string|max:50', // Código de cortesía opcional
+            'payment_method' => 'required|string',
+            'payment_proof' => 'nullable|image|max:2048',
+            'courtesy_code' => 'nullable|string|max:50',
         ]);
-        // Si tiene código de cortesía, verificarlo
-        if ($request->has('courtesy_code')) {
-            $eventAssistant = EventAssistant::find($request->event_assistant_id);
+
+        $eventAssistant = EventAssistant::find($request->event_assistant_id);
+
+        // Si tiene código de cortesía
+        if ($request->filled('courtesy_code')) {
             $courtesyCode = Coupon::where('numeric_code', $request->courtesy_code)
-                                        ->where('is_consumed', false)
-                                        ->where('event_id', $eventAssistant->event_id)
-                                        ->first();
+                ->where('is_consumed', false)
+                ->where('event_id', $eventAssistant->event_id)
+                ->first();
 
             if (!$courtesyCode) {
                 return redirect()->back()->withErrors(['error' => 'El código de cortesía no es válido o ya ha sido utilizado.']);
             }
 
-            // Si el código es válido, marcarlo como usado y registrar el asistente como pagado
+            // Marcar cupón como usado
             $courtesyCode->is_consumed = true;
             $courtesyCode->eventAssistant_id = $eventAssistant->id;
             $courtesyCode->save();
@@ -785,36 +788,32 @@ class EventAssistantController extends Controller
             $eventAssistant->is_paid = true;
             $eventAssistant->save();
 
-            // Generar el PDF y enviar correo si es necesario
+            // Generar PDF y mostrar vista de confirmación
             $PDFController = new PDFController();
             $meta = $PDFController->buildPDF_Mail($request->event_assistant_id);
-
             return view('email.return_email_ticketevent', compact('meta'));
         }
 
+        // Guardar comprobante si existe
         $paymentProofPath = null;
         if ($request->hasFile('payment_proof')) {
             $paymentProofPath = $request->file('payment_proof')->store('payment_proofs', 'public');
         }
 
-        if ($request->hasFile('payment_proof')) {
-            $paymentProofPath = $request->file('payment_proof')->store('payment_proofs', 'public');
-        }
-
-
-        if($request->payment_method=='PayPal'){
-
-            $eventAssistant = EventAssistant::find($request->event_assistant_id);
-            $event=Event::find($eventAssistant->event_id);
-            $pago['event_assistant_id']=$request->event_assistant_id;
-            $pago['payer_name']=$request->payer_name;
-            $pago['payer_document_number']=$request->payer_document_number;
-            $pago['amount']=round($request->amount*0.000234);
-            $pago['evento']=$event->name;
+        // Si seleccionó PayPal, redirige a checkout
+        if ($request->payment_method == 'PayPal') {
+            $event = Event::find($eventAssistant->event_id);
+            $pago = [
+                'event_assistant_id' => $request->event_assistant_id,
+                'payer_name' => $request->payer_name,
+                'payer_document_number' => $request->payer_document_number,
+                'amount' => round($request->amount * 0.000234),
+                'evento' => $event->name,
+            ];
             return view('paypal.checkout', compact('pago'));
-
         }
 
+        // Crear registro de pago
         Payment::create([
             'event_assistant_id' => $request->event_assistant_id,
             'payer_name' => $request->payer_name,
@@ -826,24 +825,16 @@ class EventAssistantController extends Controller
             'description' => 'Pago de Ticket',
         ]);
 
+        // Marcar como pagado
+        $eventAssistant->is_paid = true;
+        $eventAssistant->save();
 
+        // Redirigir con mensaje de éxito
+        return redirect()->back()->with('success', 'Se ha registrado el pago correctamente');
+    }
 
-        $eventAsistant = EventAssistant::find($request->event_assistant_id);
-        if($eventAsistant->isFullyPaid()){
-            $eventAsistant->is_paid = true;
-            $eventAsistant->save();
-        }
-
-        #return redirect()->back()
-        #->with('success', 'Se ha registrado el pago correctamente');
-
-        $PDFController=new PDFController();
-        $meta=$PDFController->buildPDF_Mail($request->event_assistant_id);
-        return view('email.return_email_ticketevent',compact('meta'));
-
-        }
-
-    public function sendEmailInfoPago($id){
+    public function sendEmailInfoPago($id)
+    {
         // Buscar el registro de EventAssistant por ID
         $eventAssistant = EventAssistant::find($id);
 
@@ -860,24 +851,28 @@ class EventAssistantController extends Controller
         }
 
         // Enviar el correo
-        Mail::send('emails.infoPagoAssistant',
-        ['eventAssistant' => $eventAssistant]
-        , function($message) use ($email) {
-            $message->to($email)
+        Mail::send(
+            'emails.infoPagoAssistant',
+            ['eventAssistant' => $eventAssistant],
+            function ($message) use ($email) {
+                $message->to($email)
                     ->subject('Información del evento');
-        });
+            }
+        );
 
         return response()->json(['message' => 'Email enviado a ' . $email]);
     }
 
 
 
-    public function showMassPayload($idEvent){
+    public function showMassPayload($idEvent)
+    {
         $event = Event::find($idEvent);
         return view('eventAssistant.massPayload', compact('event'));
     }
 
-    public function courtesyCode($idEvent){
+    public function courtesyCode($idEvent)
+    {
         $event = Event::find($idEvent);
         return view('eventAssistant.courtesyCode', compact('event'));
     }

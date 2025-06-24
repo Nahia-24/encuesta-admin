@@ -6,7 +6,7 @@ Website: http://www.left4code.com/
 Contact: muhammadrizki@left4code.com
 Purchase: https://themeforest.net/user/left4code/portfolio
 Renew Support: https://themeforest.net/user/left4code/portfolio
-License: You must have a valid license purchased only from themeforest(the above link) in order to legally use the theme for your project.
+License: You must have a valid license purchased only from themeforest(the above link) in order to legally use the theme 
 -->
 <html
     class="opacity-0"
@@ -16,38 +16,20 @@ License: You must have a valid license purchased only from themeforest(the above
 
 <head>
     <meta charset="utf-8">
-    <meta
-        name="csrf-token"
-        content="{{ csrf_token() }}"
-    >
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
-    <meta
-        name="description"
-        content="Midone admin is super flexible, powerful, clean & modern responsive tailwind admin template with unlimited possibilities."
-    >
-    <meta
-        name="keywords"
-        content="admin template, midone Admin Template, dashboard template, flat admin template, responsive admin template, web app"
-    >
-    <meta
-        name="author"
-        content="LEFT4CODE"
-    >
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Midone admin is super flexible, powerful, clean & modern responsive tailwind admin template with unlimited possibilities.">
+    <meta name="keywords" content="admin template, midone Admin Template, dashboard template, flat admin template, responsive admin template, web app">
+    <meta name="author" content="LEFT4CODE">
 
     @yield('head')
+    @yield('subhead') {{-- Para estilos o scripts adicionales en el <head> --}}
 
     <!-- BEGIN: CSS Assets-->
     @stack('styles')
-   
-   
     <!-- END: CSS Assets-->
 
-    @vite('resources/css/app.css')
-
- 
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <!-- END: Head -->
 
@@ -66,6 +48,8 @@ License: You must have a valid license purchased only from themeforest(the above
     @vite('resources/js/components/base/theme-color.js')
     @stack('scripts')
     <!-- END: Pages, layouts, components JS Assets-->
+
+    @yield('subscript') {{-- Para scripts específicos al final del <body> --}}
 </body>
 
 </html>

@@ -2,7 +2,7 @@
 
 @section('subhead')
     <title>Eventos - Crear</title>
-    <link rel="stylesheet" href="{{url('css/blade.css')}}">
+    <link rel="stylesheet" href="{{ url('css/blade.css') }}">
 @endsection
 
 @section('subcontent')
@@ -15,36 +15,28 @@
                 <form method="POST" action="{{ route('event.store') }}" enctype="multipart/form-data">
                     @csrf
 
-                    <!-- Nombre del Evento -->
-                    <div class="mt-3">
-                        <x-base.form-label for="name">Nombre del Evento</x-base.form-label>
-                        <x-base.form-input
-                            class="w-full {{ $errors->has('name') ? 'border-red-500' : '' }}"
-                            id="name"
-                            name="name"
-                            type="text"
-                            placeholder="Nombre del Evento"
-                            value="{{ old('name') }}"
-                        />
-                        @error('name')
-                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
+                        <!-- Nombre del Evento -->
+                        <div>
+                            <x-base.form-label for="name">Nombre del Evento</x-base.form-label>
+                            <x-base.form-input class="w-full {{ $errors->has('name') ? 'border-red-500' : '' }}"
+                                id="name" name="name" type="text" placeholder="Nombre del Evento"
+                                value="{{ old('name') }}" />
+                            @error('name')
+                                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                    <!-- Capacidad total -->
-                    <div class="mt-3">
-                        <x-base.form-label for="capacity">Capacidad Total</x-base.form-label>
-                        <x-base.form-input
-                            class="w-full {{ $errors->has('capacity') ? 'border-red-500' : '' }}"
-                            id="capacity"
-                            name="capacity"
-                            type="number"
-                            placeholder="Capacidad total del evento"
-                            value="{{ old('capacity') }}"
-                        />
-                        @error('capacity')
-                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                        @enderror
+                        <!-- Capacidad total -->
+                        <div>
+                            <x-base.form-label for="capacity">Capacidad Total</x-base.form-label>
+                            <x-base.form-input class="w-full {{ $errors->has('capacity') ? 'border-red-500' : '' }}"
+                                id="capacity" name="capacity" type="number" placeholder="Capacidad total del evento"
+                                value="{{ old('capacity') }}" />
+                            @error('capacity')
+                                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
 
                     <div class="mt-3 box">
@@ -53,13 +45,8 @@
                             <!-- Fecha del Evento -->
                             <div class="m-2">
                                 <x-base.form-label for="event_date">Fecha Inicial del Evento</x-base.form-label>
-                                <x-base.form-input
-                                    class="w-full {{ $errors->has('event_date') ? 'border-red-500' : '' }}"
-                                    id="event_date"
-                                    name="event_date"
-                                    type="date"
-                                    value="{{ old('event_date') }}"
-                                />
+                                <x-base.form-input class="w-full {{ $errors->has('event_date') ? 'border-red-500' : '' }}"
+                                    id="event_date" name="event_date" type="date" value="{{ old('event_date') }}" />
                                 @error('event_date')
                                     <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
@@ -70,11 +57,8 @@
                                 <x-base.form-label for="event_date_end">Fecha Final del Evento</x-base.form-label>
                                 <x-base.form-input
                                     class="w-full {{ $errors->has('event_date_end') ? 'border-red-500' : '' }}"
-                                    id="event_date_end"
-                                    name="event_date_end"
-                                    type="date"
-                                    value="{{ old('event_date_end') }}"
-                                />
+                                    id="event_date_end" name="event_date_end" type="date"
+                                    value="{{ old('event_date_end') }}" />
                                 @error('event_date_end')
                                     <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
@@ -85,13 +69,8 @@
                         <!-- Hora de Inicio -->
                         <div class="col mt-3 col_horaIni">
                             <x-base.form-label for="start_time">Hora de Inicio</x-base.form-label>
-                            <x-base.form-input
-                                class="w-full {{ $errors->has('start_time') ? 'border-red-500' : '' }}"
-                                id="start_time"
-                                name="start_time"
-                                type="time"
-                                value="{{ old('start_time') }}"
-                            />
+                            <x-base.form-input class="w-full {{ $errors->has('start_time') ? 'border-red-500' : '' }}"
+                                id="start_time" name="start_time" type="time" value="{{ old('start_time') }}" />
                             @error('start_time')
                                 <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                             @enderror
@@ -100,31 +79,24 @@
                         <!-- Hora de Fin -->
                         <div class="col mt-3 col_horaFin">
                             <x-base.form-label for="end_time">Hora de Fin</x-base.form-label>
-                            <x-base.form-input
-                                class="w-full {{ $errors->has('end_time') ? 'border-red-500' : '' }}"
-                                id="end_time"
-                                name="end_time"
-                                type="time"
-                                value="{{ old('end_time') }}"
-                            />
+                            <x-base.form-input class="w-full {{ $errors->has('end_time') ? 'border-red-500' : '' }}"
+                                id="end_time" name="end_time" type="time" value="{{ old('end_time') }}" />
                             @error('end_time')
                                 <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
-                    <div  class="row row_dptocity">
+                    <div class="row row_dptocity">
                         <!-- Departamento -->
                         <div class="col mt-3 col_depto">
                             <x-base.form-label for="department_id">Departamento</x-base.form-label>
-                            <x-base.tom-select
-                                class="w-full {{ $errors->has('department_id') ? 'border-red-500' : '' }}"
-                                id="department_id"
-                                name="department_id"
-                                onchange="filterCities()"
-                            >
+                            <x-base.tom-select class="w-full {{ $errors->has('department_id') ? 'border-red-500' : '' }}"
+                                id="department_id" name="department_id" onchange="filterCities()">
                                 <option></option>
                                 @foreach ($departments as $department)
-                                    <option value="{{$department->id}}" {{ old('department_id') == $department->id ? 'selected' : '' }}>{{ $department->code_dane }} - {{ $department->name }}</option>
+                                    <option value="{{ $department->id }}"
+                                        {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                        {{ $department->code_dane }} - {{ $department->name }}</option>
                                 @endforeach
                             </x-base.tom-select>
                             @error('department_id')
@@ -135,11 +107,8 @@
                         <!-- Ciudad -->
                         <div class="col mt-3 col_city">
                             <x-base.form-label for="city_id">Ciudad</x-base.form-label>
-                            <x-base.tom-select
-                                class="w-full {{ $errors->has('city_id') ? 'border-red-500' : '' }}"
-                                id="city_id"
-                                name="city_id"
-                            >
+                            <x-base.tom-select class="w-full {{ $errors->has('city_id') ? 'border-red-500' : '' }}"
+                                id="city_id" name="city_id">
                                 <option></option>
                             </x-base.tom-select>
                             @error('city_id')
@@ -151,36 +120,34 @@
                     <!-- Tipos de entradas -->
                     <div class="mt-3">
                         <x-base.form-label>Tipos de Entradas</x-base.form-label>
+
                         <div id="ticket-types-container"></div>
-                        <x-base.button
-                            class="mt-3"
-                            type="button"
-                            variant="outline-secondary"
-                            onclick="addTicketType()"
-                        >
+
+                        <x-base.button class="mt-3" type="button" variant="outline-secondary" onclick="addTicketType()">
                             Añadir Tipo de Entrada
                         </x-base.button>
 
-                        @foreach ($errors->get('ticketTypes.*') as $index => $errorMessages)
-                            @foreach ($errorMessages as $errorMessage)
-                                <div class="text-red-500 text-sm mt-1">
-                                    {{ "Tipo de entrada " . (intval($index) + 1) . ": " . $errorMessage }}
+                        {{-- Mostrar errores por ticket --}}
+                        @php
+                            $ticketErrors = $errors->getBag('default')->getMessages();
+                        @endphp
 
-                                </div>
-                            @endforeach
+                        @foreach ($ticketErrors as $key => $messages)
+                            @if (Str::startsWith($key, 'ticketTypes.') && Str::contains($key, 'features'))
+                                @foreach ($messages as $message)
+                                    <div class="text-red-500 text-sm mt-1">
+                                        {{ $message }}
+                                    </div>
+                                @endforeach
+                            @endif
                         @endforeach
                     </div>
 
                     <!-- Descripción del Evento -->
                     <div class="mt-3">
                         <x-base.form-label for="description">Descripción del Evento</x-base.form-label>
-                        <textarea
-                            class="w-full form-control {{ $errors->has('description') ? 'border-red-500' : '' }}"
-                            id="description"
-                            name="description"
-                            placeholder="Descripción del Evento"
-                            rows="5"
-                        >{{ old('description') }}</textarea>
+                        <textarea class="w-full form-control {{ $errors->has('description') ? 'border-red-500' : '' }}" id="description"
+                            name="description" placeholder="Descripción del Evento" rows="5">{{ old('description') }}</textarea>
                         @error('description')
                             <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                         @enderror
@@ -189,14 +156,9 @@
                     <!-- Dirección del Evento -->
                     <div class="mt-3">
                         <x-base.form-label for="address">Dirección del Evento</x-base.form-label>
-                        <x-base.form-input
-                            class="w-full {{ $errors->has('address') ? 'border-red-500' : '' }}"
-                            id="address"
-                            name="address"
-                            type="text"
-                            placeholder="Direccion del evento"
-                            value="{{ old('address') }}"
-                        />
+                        <x-base.form-input class="w-full {{ $errors->has('address') ? 'border-red-500' : '' }}"
+                            id="address" name="address" type="text" placeholder="Direccion del evento"
+                            value="{{ old('address') }}" />
                         @error('address')
                             <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                         @enderror
@@ -205,14 +167,12 @@
                     <!-- Estado por defecto-->
                     <div class="mt-3">
                         <x-base.form-label for="department_id">Estado por defecto</x-base.form-label>
-                        <x-base.tom-select
-                            class="w-full {{ $errors->has('status') ? 'border-red-500' : '' }}"
-                            id="status"
-                            name="status"
-                        >
+                        <x-base.tom-select class="w-full {{ $errors->has('status') ? 'border-red-500' : '' }}"
+                            id="status" name="status">
                             <option></option>
                             @foreach (config('statusEvento') as $label => $valor)
-                                <option value="{{$valor}}" {{ old('status') == $valor ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $valor }}" {{ old('status') == $valor ? 'selected' : '' }}>
+                                    {{ $label }}</option>
                             @endforeach
                         </x-base.tom-select>
                         @error('status')
@@ -223,13 +183,8 @@
                     <!-- Imagen del Encabezado -->
                     <div class="mt-3">
                         <x-base.form-label for="header_image_path">Imagen del Encabezado</x-base.form-label>
-                        <input
-                            class="w-full form-control {{ $errors->has('header_image_path') ? 'border-red-500' : '' }}"
-                            id="header_image_path"
-                            name="header_image_path"
-                            type="file"
-                            accept="image/*"
-                        />
+                        <input class="w-full form-control {{ $errors->has('header_image_path') ? 'border-red-500' : '' }}"
+                            id="header_image_path" name="header_image_path" type="file" accept="image/*" />
                         @error('header_image_path')
                             <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                         @enderror
@@ -241,14 +196,9 @@
                             <!-- color_one -->
                             <div class="m-2">
                                 <x-base.form-label for="color_one">Color Primario</x-base.form-label>
-                                <x-base.form-input
-                                    class="w-full {{ $errors->has('color_one') ? 'border-red-500' : '' }}"
-                                    id="color_one"
-                                    name="color_one"
-                                    type="color"
-                                    placeholder="Direccion del evento"
-                                    value="{{ old('color_one', $event->color_one ?? '#FFFFFF') }}"
-                                />
+                                <x-base.form-input class="w-full {{ $errors->has('color_one') ? 'border-red-500' : '' }}"
+                                    id="color_one" name="color_one" type="color" placeholder="Direccion del evento"
+                                    value="{{ old('color_one', $event->color_one ?? '#FFFFFF') }}" />
                                 @error('color_one')
                                     <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
@@ -257,14 +207,9 @@
                             <!-- two -->
                             <div class="m-2">
                                 <x-base.form-label for="color_two">Color Secundario</x-base.form-label>
-                                <x-base.form-input
-                                    class="w-full {{ $errors->has('color_two') ? 'border-red-500' : '' }}"
-                                    id="color_two"
-                                    name="color_two"
-                                    type="color"
-                                    placeholder="Direccion del evento"
-                                    value="{{ old('color_one', $event->color_two ?? '#FFFFFF') }}"
-                                />
+                                <x-base.form-input class="w-full {{ $errors->has('color_two') ? 'border-red-500' : '' }}"
+                                    id="color_two" name="color_two" type="color" placeholder="Direccion del evento"
+                                    value="{{ old('color_one', $event->color_two ?? '#FFFFFF') }}" />
                                 @error('color_two')
                                     <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
@@ -276,12 +221,8 @@
                     <div class="mt-3">
                         <x-base.form-label>Campos Adicionales</x-base.form-label>
                         <div id="dynamic-fields-container"></div>
-                        <x-base.button
-                            class="mt-3"
-                            type="button"
-                            variant="outline-secondary"
-                            onclick="addDynamicField()"
-                        >
+                        <x-base.button class="mt-3" type="button" variant="outline-secondary"
+                            onclick="addDynamicField()">
                             Añadir Campo
                         </x-base.button>
 
@@ -292,26 +233,18 @@
                         @foreach ($errors->get('additionalFields.*') as $fieldIndex => $errorMessages)
                             @foreach ($errorMessages as $errorMessage)
                                 <div class="text-red-500 text-sm mt-1">
-                                    {{ "Campo adicional " . ($loop->parent->index + 1) . ": " . $errorMessage }}
+                                    {{ 'Campo adicional ' . ($loop->parent->index + 1) . ': ' . $errorMessage }}
                                 </div>
                             @endforeach
                         @endforeach
                     </div>
 
                     <div class="mt-5 text-right">
-                        <x-base.button
-                            class="mr-1 w-24"
-                            type="button"
-                            variant="outline-secondary"
-                            onclick="window.location='{{ url()->previous() }}'"
-                        >
+                        <x-base.button class="mr-1 w-24" type="button" variant="outline-secondary"
+                            onclick="window.location='{{ url()->previous() }}'">
                             Cancelar
                         </x-base.button>
-                        <x-base.button
-                            class="w-24"
-                            type="submit"
-                            variant="primary"
-                        >
+                        <x-base.button class="w-24" type="submit" variant="primary">
                             Guardar
                         </x-base.button>
                     </div>
@@ -322,6 +255,8 @@
 
     <script>
         let fieldIndex = 0;
+        let ticketTypeIndex = 0;
+        const featureOptions = @json($characteristics);
 
         function addDynamicField() {
             const container = document.getElementById('dynamic-fields-container');
@@ -357,57 +292,84 @@
             document.getElementById(`${fieldId}_wrapper`).remove();
         }
 
-        let ticketTypeIndex = 0;
         function addTicketType() {
             const container = document.getElementById('ticket-types-container');
             const ticketTypeId = `ticket_type_${ticketTypeIndex}`;
+
+            // Construir el HTML de las opciones del select desde JS
+            const featureOptionsHtml = featureOptions.map(feature => {
+                const label = `${feature.name}${feature.consumable ? ' - (CONSUMIBLE)' : ''}`;
+                return `<option value="${feature.id}">${label}</option>`;
+            }).join('');
+
+            // HTML de los campos dinámicos del tipo de entrada
             const fieldHtml = `
-                <div class="flex items-center mt-2" id="${ticketTypeId}_wrapper">
-                    <x-base.form-input
-                        class="w-full"
-                        id="${ticketTypeId}_name"
-                        name="ticketTypes[${ticketTypeIndex}][name]"
-                        type="text"
-                        placeholder="Nombre del Tipo de Entrada"
-                    />
-                    <x-base.form-input
-                        id="${ticketTypeId}_capacity"
-                        type="number"
-                        name="ticketTypes[${ticketTypeIndex}][capacity]"
-                        placeholder="Capacidad"
-                        class="form-control w-full"
-                    />
-                    <x-base.form-input
-                        id="${ticketTypeId}_price"
-                        type="number"
-                        step="0.01"
-                        name="ticketTypes[${ticketTypeIndex}][price]"
-                        placeholder="Precio"
-                        class="form-control w-full"
-                    />
-                    <select
-                        id="${ticketTypeId}_features"
-                        name="ticketTypes[${ticketTypeIndex}][features][]"
-                        multiple="multiple"
-                        class="tom-select w-full mt-2"
-                    >
-                        @foreach($features as $feature)
-                            <option value="{{ $feature->id }}" >{{ $feature->name }} {{ $feature->consumable ? '- (CONSUMIBLE)' : '' }}</option>
-                        @endforeach
-                    </select>
-                    <x-base.button
-                        type="button"
-                        variant="outline-danger"
-                        onclick="removeTicketType('${ticketTypeId}')"
-                        class="mt-3"
-                    >
-                        Eliminar
-                    </x-base.button>
-                </div>
-            `;
+<div id="${ticketTypeId}_wrapper" class="grid grid-cols-12 gap-4 items-end mt-3">
+    <div class="col-span-12 md:col-span-3">
+        <label for="${ticketTypeId}_name" class="form-label">Nombre del Tipo</label>
+        <input
+            id="${ticketTypeId}_name"
+            name="ticketTypes[${ticketTypeIndex}][name]"
+            type="text"
+            placeholder="Ej: Entrada VIP"
+            class="form-control w-full"
+        />
+    </div>
+    <div class="col-span-6 md:col-span-2">
+        <label for="${ticketTypeId}_capacity" class="form-label">Capacidad</label>
+        <input
+            id="${ticketTypeId}_capacity"
+            name="ticketTypes[${ticketTypeIndex}][capacity]"
+            type="number"
+            placeholder="100"
+            class="form-control w-full"
+        />
+    </div>
+    <div class="col-span-6 md:col-span-2">
+        <label for="${ticketTypeId}_price" class="form-label">Precio</label>
+        <input
+            id="${ticketTypeId}_price"
+            name="ticketTypes[${ticketTypeIndex}][price]"
+            type="number"
+            step="0.01"
+            placeholder="25000"
+            class="form-control w-full"
+        />
+    </div>
+    <div class="col-span-11 md:col-span-4">
+        <label for="${ticketTypeId}_features" class="form-label">Características</label>
+        <select
+            id="${ticketTypeId}_features"
+            name="ticketTypes[${ticketTypeIndex}][characteristics][]"
+            multiple
+            class="tom-select w-full"
+        >
+            ${featureOptionsHtml}
+        </select>
+    </div>
+    <button
+        type="button"
+        onclick="removeTicketType('${ticketTypeId}')"
+        class="text-red-500 hover:text-red-700 mt-[-4px]"
+        title="Eliminar"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 3h6a1 1 0 011 1v1H8V4a1 1 0 011-1z" />
+        </svg>
+    </button> 
+</div>
+`;
+
+
             container.insertAdjacentHTML('beforeend', fieldHtml);
 
-            // Inicializar Tom Select en el nuevo elemento select
+            // Inicializa Tom Select en el nuevo select
             new TomSelect(`#${ticketTypeId}_features`, {
                 plugins: ['remove_button'],
                 maxItems: null,
@@ -416,9 +378,9 @@
             ticketTypeIndex++;
         }
 
-
-        function removeTicketType(ticketTypeId) {
-            document.getElementById(`${ticketTypeId}_wrapper`).remove();
+        function removeTicketType(id) {
+            const element = document.getElementById(`${id}_wrapper`);
+            if (element) element.remove();
         }
 
         function updateCityOptions(cities) {
@@ -429,18 +391,24 @@
                 console.error('Expected an array of cities but got:', cities);
                 return;
             }
-
-            // Limpia todas las opciones actuales
+            // Limpia las opciones actuales del select de ciudades
             citySelect.clearOptions();
+            citySelect.addOption({
+                value: '',
+                text: 'Seleccione una ciudad'
+            });
 
             // Agrega nuevas opciones dinámicamente
             cities.forEach(city => {
-                citySelect.addOption({value: city.id, text: city.name});
+                citySelect.addOption({
+                    value: city.id,
+                    text: city.name
+                });
             });
 
-            @if(old('city_id'))
-            console.log("se va a asiganr "+{{ old('city_id') }});
-            citySelect.setValue({{ old('city_id') }});
+            @if (old('city_id'))
+                console.log("se va a asiganr " + {{ old('city_id') }});
+                citySelect.setValue('{{ old('city_id') }}');
             @endif
 
             // Refresca la lista de opciones para que se muestren correctamente en la interfaz

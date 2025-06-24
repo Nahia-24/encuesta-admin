@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\TicketFeatures;
+use App\Models\TicketCharacteristic;
 
 class TicketType extends Model
 {
@@ -12,7 +14,12 @@ class TicketType extends Model
         'event_id',
         'name',
         'price',
-        'capacity'
+        'capacity',
+        'features', // asegúrate de que esté aquí
+    ];
+
+    protected $casts = [
+        'features' => 'array', // Asegura que 'features' se maneje como un array
     ];
 
     // Relación con el evento
@@ -23,15 +30,12 @@ class TicketType extends Model
 
     public function features()
     {
+        // Relación many-to-many con TicketFeatures
         return $this->belongsToMany(TicketFeatures::class, 'ticket_type_feature', 'ticket_type_id', 'ticket_feature_id');
     }
 
-    public function ticketTypeFeature()
-    {
-        return $this->belongsToMany(TicketTypeFeature::class, 'ticket_type_feature');
-    }
 
-    public function EventAssistant()
+    public function eventAssistant()
     {
         return $this->hasMany(EventAssistant::class, 'ticket_type_id');
     }
@@ -39,5 +43,10 @@ class TicketType extends Model
     public function formattedPrice()
     {
         return number_format($this->price, 0, ',', '.');
+    }
+    // En tu modelo TicketType
+    public function characteristics()
+    {
+        return $this->belongsToMany(TicketCharacteristic::class, 'characteristic_ticket_feature', 'ticket_feature_id', 'ticket_characteristic_id');
     }
 }

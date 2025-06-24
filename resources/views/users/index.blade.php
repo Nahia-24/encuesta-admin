@@ -29,7 +29,7 @@
                 <x-base.table.thead>
                     <x-base.table.tr>
                         <x-base.table.th class="whitespace-nowrap border-b-0">No.</x-base.table.th>
-                        <x-base.table.th class="whitespace-nowrap border-b-0">Nombre</x-base.table.th>
+                        <x-base.table.th class="whitespace-nowrap border-b-0">Nombre Completo</x-base.table.th>
                         <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Telefono</x-base.table.th>
                         <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Role</x-base.table.th>
                         <x-base.table.th class="whitespace-nowrap border-b-0 text-center">Estado</x-base.table.th>
