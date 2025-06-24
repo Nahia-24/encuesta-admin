@@ -5,128 +5,146 @@
 @endsection
 
 @section('subcontent')
-    <div class="box">
-        <a class="m-3" href="{{ route('eventAssistant.index', ['idEvent' => $eventAssistant->event_id]) }}">Cargar Listado
-            Asistentes</a>
+    <div class="box p-5 mt-5">
+        <a href="{{ route('eventAssistant.index', ['idEvent' => $eventAssistant->event_id]) }}"
+            class="text-blue-600 hover:underline">
+            ← Volver al listado de asistentes
+        </a>
     </div>
+
     <h2 class="intro-y mt-10 text-lg font-medium">Detalles del Asistente y del Evento</h2>
+
     @if (session('success'))
-        <div class="alert alert-success">
+        <x-base.alert variant="success" class="mb-2 flex items-center">
+            <x-base.lucide class="mr-2 h-6 w-6" icon="CheckCircle" />
             {{ session('success') }}
-        </div>
+        </x-base.alert>
     @endif
+
     @if (session('error'))
-        <x-base.alert class="mb-2 flex items-center" variant="danger">
+        <x-base.alert variant="danger" class="mb-2 flex items-center">
             <x-base.lucide class="mr-2 h-6 w-6" icon="AlertCircle" />
             {{ session('error') }}
         </x-base.alert>
     @endif
 
     @if (session('warning'))
-        <x-base.alert class="mb-2 flex items-center" variant="warning">
+        <x-base.alert variant="warning" class="mb-2 flex items-center">
             <x-base.lucide class="mr-2 h-6 w-6" icon="AlertCircle" />
             {{ session('warning') }}
         </x-base.alert>
     @endif
 
-
+    {{-- ESTADO DE PAGO --}}
     <div class="mt-5">
-        <div class="">
-            @if ($eventAssistant->is_paid)
-                <div role="alert" class="alert rounded-md bg-success text-slate-900 dark:border-success box p-5">
-                    <H1>ESTADO DEL PAGO DEL TICKET: </H1>Pagado
-                </div>
-            @else
-                @if ($eventAssistant->totalPayments() == 0)
-                    <div role="alert"
-                        class="alert relative border rounded-md bg-danger border-danger text-white dark:border-danger mb-2 box p-5">
-                        <H1>ESTADO DE LA BOLETA DEL TICKET: </H1>No Pagado
-
-                    </div>
-                @else
-                    <div role="alert" class="alert rounded-md bg-warning text-slate-900 dark:border-warning box p-5">
-                        <H1>ESTADO DE LA BOLETA DEL TICKET: </H1>Pendiente
-                    </div>
-                @endif
-            @endif
-        </div>
+        @if ($eventAssistant->is_paid)
+            <div class="alert bg-success text-white box p-5 rounded-md">
+                <h3 class="text-lg font-semibold">Estado del Pago del Ticket:</h3>
+                <p>Pagado</p>
+            </div>
+        @elseif ($eventAssistant->totalPayments() == 0)
+            <div class="alert bg-danger text-white box p-5 rounded-md">
+                <h3 class="text-lg font-semibold">Estado del Pago del Ticket:</h3>
+                <p>No Pagado</p>
+            </div>
+        @else
+            <div class="alert bg-warning text-black box p-5 rounded-md">
+                <h3 class="text-lg font-semibold">Estado del Pago del Ticket:</h3>
+                <p>Pendiente</p>
+            </div>
+        @endif
     </div>
-    <div class="mt-5">
-        <div class="box p-5">
-            <h3 class="text-lg font-medium">Información del Asistente</h3>
 
-            <!-- Cargar informacion del asistente con sus parametros establecidos -->
-            @php
-                // Obtener los parámetros guardados en registration_parameters
-                $selectedFields = json_decode($eventAssistant->event->registration_parameters, true) ?? [];
-                $additionalParameters = json_decode($eventAssistant->event->additionalParameters, true) ?? [];
-            @endphp
-            @foreach ($selectedFields as $field)
-                <p class="">
-                    <strong>{{ config("traductorColumnasUsers.$field", ucfirst(str_replace('_', ' ', $field))) }}</strong>:
-                    {{ $eventAssistant->user->$field }}
-                </p>
-            @endforeach
-            @foreach ($additionalParameters as $parameter)
+    {{-- INFORMACIÓN PRINCIPAL --}}
+    <div class="box p-5 mt-5 space-y-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {{-- INFORMACIÓN DEL ASISTENTE --}}
+            <div>
+                <h3 class="text-lg font-semibold mb-4 border-b pb-2">Información del Asistente</h3>
                 @php
-                    $userParameter = $eventAssistant->eventParameters
-                        ->where('event_id', $eventAssistant->event_id)
-                        ->where('additional_parameter_id', $parameter['id'])
-                        ->first();
+                    $selectedFields = json_decode($eventAssistant->event->registration_parameters, true) ?? [];
+                    $additionalParameters = json_decode($eventAssistant->event->additionalParameters, true) ?? [];
                 @endphp
-                <p class=""><strong>{{ ucfirst(str_replace('_', ' ', $parameter['name'])) }}</strong>:
-                    {{ $userParameter ? $userParameter->value : '-' }}</p>
-            @endforeach
-            <!-- FIN Cargar informacion del asistente con sus parametros establecidos -->
 
-            <p><strong>Tipo de Ticket:</strong> {{ $eventAssistant->ticketType->name ?? 'N/A' }}</p>
-            <p><strong>Fecha de Registro:</strong> {{ $eventAssistant->created_at->format('d/m/Y') }}</p>
-            <p><strong>GUID:</strong> {{ $eventAssistant->guid }}</p>
-            <p><strong>Código QR:</strong></p>
+                <div class="space-y-2 text-sm text-gray-700">
+                    @foreach ($selectedFields as $field)
+                        <div>
+                            <strong>{{ config("traductorColumnasUsers.$field", ucfirst(str_replace('_', ' ', $field))) }}:</strong>
+                            <span class="text-black">{{ $eventAssistant->user->$field }}</span>
+                        </div>
+                    @endforeach
+
+                    @foreach ($additionalParameters as $parameter)
+                        @php
+                            $userParameter = $eventAssistant->eventParameters
+                                ->where('event_id', $eventAssistant->event_id)
+                                ->where('additional_parameter_id', $parameter['id'])
+                                ->first();
+                        @endphp
+                        <div>
+                            <strong>{{ ucfirst(str_replace('_', ' ', $parameter['name'])) }}:</strong>
+                            <span class="text-black">{{ $userParameter ? $userParameter->value : '-' }}</span>
+                        </div>
+                    @endforeach
+
+                    <div><strong>Tipo de Ticket:</strong> {{ $eventAssistant->ticketType->name ?? 'N/A' }}</div>
+                    <div><strong>Fecha de Registro:</strong> {{ $eventAssistant->created_at->format('d/m/Y') }}</div>
+                    <div><strong>GUID:</strong> {{ $eventAssistant->guid }}</div>
+                </div>
+            </div>
+
+            {{-- INFORMACIÓN DEL EVENTO --}}
+            <div>
+                <h3 class="text-lg font-semibold mb-4 border-b pb-2">Información del Evento</h3>
+                <div class="space-y-2 text-sm text-gray-700">
+                    <div><strong>Nombre:</strong> {{ $eventAssistant->event->name }}</div>
+                    <div><strong>Descripción:</strong> {{ $eventAssistant->event->description }}</div>
+                    <div><strong>Fecha:</strong> {{ $eventAssistant->event->event_date }}</div>
+                    <div><strong>Hora Inicio:</strong> {{ $eventAssistant->event->start_time }}</div>
+                    <div><strong>Hora Fin:</strong> {{ $eventAssistant->event->end_time }}</div>
+                    <div><strong>Ciudad:</strong> {{ $eventAssistant->event->city->name ?? 'N/A' }}</div>
+                    <div><strong>Capacidad:</strong> {{ $eventAssistant->event->capacity }}</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- CÓDIGO QR --}}
+        <div>
+            <h3 class="text-lg font-semibold mt-6 mb-2 border-b pb-2">Código QR</h3>
             <div class="mt-2">
                 {!! $eventAssistant->qrCode !!}
             </div>
+        </div>
 
-            <br>
-
-            <h3 class="text-lg font-medium mt-5">Información del Evento</h3>
-            <p><strong>Nombre del Evento:</strong> {{ $eventAssistant->event->name }}</p>
-            <p><strong>Descripción:</strong> {{ $eventAssistant->event->description }}</p>
-            <p><strong>Fecha del Evento:</strong> {{ $eventAssistant->event->event_date }}</p>
-            <p><strong>Hora de Inicio:</strong> {{ $eventAssistant->event->start_time }}</p>
-            <p><strong>Hora de Finalización:</strong> {{ $eventAssistant->event->end_time }}</p>
-            <p><strong>Ciudad:</strong> {{ $eventAssistant->event->city->name ?? 'N/A' }}</p>
-            <p><strong>Capacidad:</strong> {{ $eventAssistant->event->capacity }}</p>
-            <br>
-            <h3 class="text-lg font-medium mt-5">Características del Ticket</h3>
-            <ul>
-                @php
-                    $characteristics = $eventAssistant?->ticketType?->characteristics ?? [];
-                @endphp
-
+        {{-- CARACTERÍSTICAS DEL TICKET --}}
+        <div>
+            <h3 class="text-lg font-semibold mt-6 mb-2 border-b pb-2">Características del Ticket</h3>
+            @php
+                $characteristics = $eventAssistant?->ticketType?->characteristics ?? [];
+            @endphp
+            <ul class="list-disc ml-5 text-sm text-gray-700">
                 @forelse ($characteristics as $item)
                     <li>
-                        <strong>{{ $item }}</strong>
-                        <span class="text-gray-600">No Consumible</span> {{-- Puedes ajustar esto si lo necesitas --}}
+                        <strong>{{ $item }}</strong> <span class="text-gray-500">No Consumible</span>
                     </li>
                 @empty
                     <li>No hay características disponibles para este ticket.</li>
                 @endforelse
             </ul>
-            <br>
-            <!-- Botón para Registrar Ingreso -->
+        </div>
 
+        {{-- BOTONES DE ACCIÓN --}}
+        <div class="mt-6">
             @if (!$eventAssistant->has_entered && !$eventAssistant->rejected)
-                <form action="{{ route('eventAssistant.registerEntry', $eventAssistant->id) }}" method="POST">
+                <form action="{{ route('eventAssistant.registerEntry', $eventAssistant->id) }}" method="POST" class="inline-block mr-2">
                     @csrf
                     @method('PATCH')
                     <x-base.button type="submit" variant="primary">
                         Registrar Ingreso
                     </x-base.button>
                 </form>
-                <br>
-                <form action="{{ route('eventAssistant.rejectEntry', $eventAssistant->id) }}" method="POST"
-                    class="inline-block">
+
+                <form action="{{ route('eventAssistant.rejectEntry', $eventAssistant->id) }}" method="POST" class="inline-block">
                     @csrf
                     @method('PATCH')
                     <x-base.button type="submit" variant="danger">
@@ -134,36 +152,28 @@
                     </x-base.button>
                 </form>
             @else
-                <div class="mt-2 flex items-center">
-                    @if ($eventAssistant->has_entered)
-                        <x-base.alert class="mb-2 flex items-center" variant="warning">
-                            <x-base.lucide class="mr-2 h-6 w-6" icon="AlertCircle" />
-                            Status:
-                            YA HA REGISTRADO EL INGRESO el {{ $eventAssistant->entry_time }}
-                        </x-base.alert>
-                    @endif
+                @if ($eventAssistant->has_entered)
+                    <x-base.alert variant="success" class="mt-2">
+                        Ya ha registrado el ingreso el {{ $eventAssistant->entry_time }}
+                    </x-base.alert>
+                @endif
 
-                    @if ($eventAssistant->rejected)
-                        <x-base.alert class="mb-2 flex items-center" variant="danger">
-                            <x-base.lucide class="mr-2 h-6 w-6" icon="AlertCircle" />
-                            Status:
-                            INGRESO RECHAZADO el {{ $eventAssistant->rejected_time }}
-                        </x-base.alert>
+                @if ($eventAssistant->rejected)
+                    <x-base.alert variant="danger" class="mt-2">
+                        Ingreso rechazado el {{ $eventAssistant->rejected_time }}
+                    </x-base.alert>
 
-                        @if (!$eventAssistant->has_entered)
-                            <br>
-                            <form action="{{ route('eventAssistant.registerEntry', $eventAssistant->id) }}" method="POST">
-                                @csrf
-                                @method('PATCH')
-                                <x-base.button type="submit" variant="primary">
-                                    Registrar Ingreso
-                                </x-base.button>
-                            </form>
-                        @endif
+                    @if (!$eventAssistant->has_entered)
+                        <form action="{{ route('eventAssistant.registerEntry', $eventAssistant->id) }}" method="POST" class="mt-2">
+                            @csrf
+                            @method('PATCH')
+                            <x-base.button type="submit" variant="primary">
+                                Registrar Ingreso
+                            </x-base.button>
+                        </form>
                     @endif
-                </div>
+                @endif
             @endif
         </div>
-    </div>
     </div>
 @endsection

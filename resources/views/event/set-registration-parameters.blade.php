@@ -5,15 +5,22 @@
 @endsection
 
 @section('subcontent')
-    <h2 class="intro-y mt-10 text-lg font-medium">Establecer Parámetros de Inscripción para el Evento</h2>
+    <div class="flex justify-between items-center mt-10">
+        <h2 class="text-lg font-medium">Establecer Parámetros de Inscripción para el Evento</h2>
+        <a href="{{ route('event.index') }}">
+            <x-base.button class="shadow-md h-9 px-8 text-sm" variant="primary">
+                Volver a Eventos
+            </x-base.button>
+        </a>
+    </div>
 
-    @if(session('success'))
+    @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
         </div>
     @endif
 
-    @if(session('error'))
+    @if (session('error'))
         <x-base.alert class="mb-2 flex items-center" variant="danger">
             <x-base.lucide class="mr-2 h-6 w-6" icon="AlertCircle" />
             {{ session('error') }}
@@ -41,7 +48,7 @@
                             'document_number' => 'Número de Documento',
                             'phone' => 'Teléfono',
                             'city_id' => 'Ciudad',
-                            'birth_date' => 'Fecha de Nacimiento'
+                            'birth_date' => 'Fecha de Nacimiento',
                         ];
 
                         // Decodificar los parámetros guardados en registration_parameters
@@ -49,10 +56,10 @@
                     @endphp
 
                     <!-- Renderizado de checkboxes para seleccionar los campos -->
-                    @foreach($userColumns as $column => $label)
+                    @foreach ($userColumns as $column => $label)
                         <div class="flex items-center mt-3">
-                            <input type="checkbox" id="{{ $column }}" name="fields[]" value="{{ $column }}" class="mr-2"
-                                   @if(in_array($column, $selectedFields)) checked @endif>
+                            <input type="checkbox" id="{{ $column }}" name="fields[]" value="{{ $column }}"
+                                class="mr-2" @if (in_array($column, $selectedFields)) checked @endif>
                             <label for="{{ $column }}" class="cursor-pointer">{{ $label }}</label>
                         </div>
                     @endforeach
@@ -61,27 +68,23 @@
                 <!-- Contenedor para los parámetros adicionales -->
                 <h4 class="text-lg font-medium mt-5">Agregar Parámetros Adicionales</h4>
                 <div id="additional-parameters-container" class="mt-3">
-                    @foreach($additional_parameters as $index => $parameter)
+                    @foreach ($additional_parameters as $index => $parameter)
                         <div class="flex items-center mt-3" id="additional-param-{{ $index }}">
                             <!-- Input para el nombre del campo -->
-                            <input
-                                type="text"
-                                name="additional_parameters[{{ $index }}][name]"
-                                value="{{ $parameter->name }}"
-                                placeholder="Nombre del campo"
-                                class="mr-2 form-input"
-                                oninput="replaceSpaceWithUnderscore(this)"
-                            >
+                            <input type="text" name="additional_parameters[{{ $index }}][name]"
+                                value="{{ $parameter->name }}" placeholder="Nombre del campo" class="mr-2 form-input"
+                                oninput="replaceSpaceWithUnderscore(this)">
 
                             <!-- Select para el tipo de campo -->
                             <select name="additional_parameters[{{ $index }}][type]" class="mr-2 form-select">
-                                <option value="text" @if($parameter->type == 'text') selected @endif>Texto</option>
-                                <option value="number" @if($parameter->type == 'number') selected @endif>Numérico</option>
-                                <option value="date" @if($parameter->type == 'date') selected @endif>Fecha</option>
+                                <option value="text" @if ($parameter->type == 'text') selected @endif>Texto</option>
+                                <option value="number" @if ($parameter->type == 'number') selected @endif>Numérico</option>
+                                <option value="date" @if ($parameter->type == 'date') selected @endif>Fecha</option>
                             </select>
 
                             <!-- Botón para eliminar el parámetro -->
-                            <button type="button" class="text-red-500" onclick="removeAdditionalParameter('{{ $index }}', '{{ $parameter->id }}')">
+                            <button type="button" class="text-red-500"
+                                onclick="removeAdditionalParameter('{{ $index }}', '{{ $parameter->id }}')">
                                 Eliminar
                             </button>
                         </div>

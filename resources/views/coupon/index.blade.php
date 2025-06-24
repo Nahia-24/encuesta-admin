@@ -5,9 +5,16 @@
 @endsection
 
 @section('subcontent')
-    <h2 class="intro-y mt-10 text-lg font-medium">Lista de Cupones del evento: <b>{{ $event->name }}</b></h2>
+    <div class="flex justify-between items-center mt-10">
+        <h2 class="text-lg font-medium">Lista de Cupones del evento: <b>{{ $event->name }}</b></h2>
+        <a href="{{ route('event.index') }}">
+            <x-base.button class="shadow-md h-9 px-8 text-sm" variant="primary">
+                Volver a Eventos
+            </x-base.button>
+        </a>
+    </div>
 
-    <div class="box">
+    <div class="intro-y box mt-5">
         <div class="flex flex-col sm:flex-row justify-between gap-6 m-4">
             <!-- Seleccionar tipo de ticket -->
             <div class="sm:w-1/3 flex flex-col justify-end">
