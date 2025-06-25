@@ -115,13 +115,7 @@
 
                             <!-- Capacidad -->
                             <x-base.table.td class="text-center border-y-0 align-middle">
-                                @if ($ticket->ticketTypes->count())
-                                    @foreach ($ticket->ticketTypes as $type)
-                                        {{ $type->capacity }}
-                                    @endforeach
-                                @else
-                                    <span class="text-slate-500 italic">Sin tipo asignado</span>
-                                @endif
+                                {{ $ticket->capacity }}
                             </x-base.table.td>
 
                             <!-- Acciones -->

@@ -307,7 +307,7 @@
                 <!-- Nombre -->
                 <div class="col-span-12 md:col-span-3">
                     <input
-                        name="ticketTypes[${ticketIndex}][name]"
+                        name="ticketTypes[${ticketTypeIndex}][name]"
                         type="text"
                         placeholder="Tipo de Entrada"
                         class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-md text-sm placeholder:text-gray-500 focus:ring-0 focus:border-slate-300"
@@ -317,7 +317,7 @@
                 <!-- Capacidad -->
                 <div class="col-span-6 md:col-span-2">
                     <input
-                        name="ticketTypes[${ticketIndex}][capacity]"
+                        name="ticketTypes[${ticketTypeIndex}][capacity]"
                         type="number"
                         placeholder="Capacidad"
                         class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-md text-sm placeholder:text-gray-500 focus:ring-0 focus:border-slate-300"
@@ -327,7 +327,7 @@
                 <!-- Precio -->
                 <div class="col-span-6 md:col-span-2">
                     <input
-                        name="ticketTypes[${ticketIndex}][price]"
+                        name="ticketTypes[${ticketTypeIndex}][price]"
                         type="number"
                         step="0.01"
                         placeholder="Precio"
@@ -339,11 +339,11 @@
                 <div class="col-span-11 md:col-span-4">
                     <select
                         id="${ticketTypeId}_characteristics"
-                        name="ticketTypes[${ticketIndex}][characteristics][]"
+                        name="ticketTypes[${ticketTypeIndex}][characteristics][]"
                         multiple
                         class="tom-select w-full h-[38px] px-3 bg-white border border-slate-200 rounded-md text-sm focus:ring-0 focus:border-slate-300"
                     >
-                        ${featureOptionsHtml}
+                        ${characteristicOptionsHtml}
                     </select>
                 </div>
 

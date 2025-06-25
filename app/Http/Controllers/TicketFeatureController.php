@@ -19,18 +19,24 @@ class TicketFeatureController extends Controller
     {
         $roles = Role::all();
 
-        $query = TicketFeatures::query();
+        // Buscar por nombre si se requiere
+        $query = TicketType::query();
 
+        if (request('search')) {
+            $query->where('name', 'like', '%' . request('search') . '%');
+        }
+
+        $tickets = $query->with('features')->paginate(30); // ← Cambiado a TicketType
+
+        // Si aún quieres mostrar los destacados, puedes dejar esto:
         $featuredCategories = TicketFeatures::where('featured', true)->pluck('id');
-
         $ticketTypesWithFeaturedFeatures = TicketType::whereHas('features', function ($q) use ($featuredCategories) {
             $q->whereIn('ticket_features.id', $featuredCategories);
         })->get();
 
-        $ticketTypes = TicketType::with('characteristics')->get();
         $dataGeneral = [];
 
-        foreach ($ticketTypes as $ticket) {
+        foreach ($tickets as $ticket) {
             $event = Event::find($ticket->event_id);
             $sold = EventAssistant::where('ticket_type_id', $ticket->id)->where('has_entered', true)->count();
             $available = $ticket->capacity - $sold;
@@ -43,25 +49,19 @@ class TicketFeatureController extends Controller
             ];
         }
 
-        if (request('search')) {
-            $query->where('name', 'like', '%' . request('search') . '%');
-        }
-
-        $tickets = $query->paginate(30);
-
-        return view('ticketFeatures.index', compact([
+        return view('ticketFeatures.index', compact(
             'roles',
             'tickets',
             'ticketTypesWithFeaturedFeatures',
             'dataGeneral'
-        ]));
+        ));
     }
 
     public function create()
     {
         $characteristics = TicketCharacteristic::all();
         $roles = Role::all();
-        $ticketTypes = TicketType::all(); // <-- FALTABA ESTO
+        $ticketTypes = TicketType::all();
 
         return view('ticketFeatures.create', compact('roles', 'ticketTypes', 'characteristics'));
     }
