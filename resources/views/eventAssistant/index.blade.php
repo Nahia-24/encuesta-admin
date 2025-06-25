@@ -437,7 +437,6 @@
                 </div>
             </x-base.dialog.panel>
         </x-base.dialog>
-
         <x-base.slideover id="superlarge-slide-over-size-preview" size="xl">
             <x-base.slideover.panel>
                 <x-base.slideover.title class="p-5">
@@ -445,8 +444,9 @@
                         Códigos de cortesía
                     </h2>
                 </x-base.slideover.title>
+
                 <x-base.slideover.description>
-                    <div class="flex justify-between mb-4">
+                    <div class="flex flex-col lg:flex-row gap-4 mb-4">
                         <!-- Select para elegir el tipo de ticket -->
                         <div class="w-full">
                             <label for="ticketType" class="block text-sm font-medium text-gray-700">Seleccionar
@@ -458,14 +458,22 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <!-- Número de cupones -->
                         <div class="w-full">
-                            <label for="numberOfCoupons" class="block text-sm font-medium text-gray-700">N cupones</label>
-                            <input type="number" id="numberOfCoupons">
+                            <label for="numberOfCoupons" class="block text-sm font-medium text-gray-700">N°
+                                Cupones</label>
+                            <input type="number" id="numberOfCoupons"
+                                class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
-                        <!-- Botón para generar nuevos códigos -->
-                        <button id="generateCouponsButton" class="btn btn-primary ml-4 mt-4">
-                            Generar nuevos códigos
-                        </button>
+
+                        <!-- Botón generar -->
+                        <div class="flex items-end">
+                            <x-base.button id="generateCouponsButton" variant="primary"
+                                class="ml-0 lg:ml-4 mt-2 lg:mt-0">
+                                Generar nuevos códigos
+                            </x-base.button>
+                        </div>
                     </div>
 
                     <!-- Tabla para mostrar los cupones -->
@@ -487,6 +495,7 @@
                 </x-base.slideover.description>
             </x-base.slideover.panel>
         </x-base.slideover>
+
 
         <script>
             function setDeleteAction(element) {
