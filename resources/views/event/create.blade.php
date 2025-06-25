@@ -303,71 +303,67 @@
             }).join('');
 
             const fieldHtml = `
-    <div id="${ticketTypeId}_wrapper" class="grid grid-cols-12 gap-4 items-end mt-3">
-        <div class="col-span-12 md:col-span-3">
-            <label for="${ticketTypeId}_name" class="form-label">Nombre del Tipo</label>
-            <input
-                id="${ticketTypeId}_name"
-                name="ticketTypes[${ticketTypeIndex}][name]"
-                type="text"
-                placeholder="Ej: Entrada VIP"
-                class="form-control w-full"
-                required
-            />
-        </div>
-        <div class="col-span-6 md:col-span-2">
-            <label for="${ticketTypeId}_capacity" class="form-label">Capacidad</label>
-            <input
-                id="${ticketTypeId}_capacity"
-                name="ticketTypes[${ticketTypeIndex}][capacity]"
-                type="number"
-                placeholder="100"
-                class="form-control w-full"
-                min="1"
-                required
-            />
-        </div>
-        <div class="col-span-6 md:col-span-2">
-            <label for="${ticketTypeId}_price" class="form-label">Precio</label>
-            <input
-                id="${ticketTypeId}_price"
-                name="ticketTypes[${ticketTypeIndex}][price]"
-                type="number"
-                step="0.01"
-                placeholder="25000"
-                class="form-control w-full"
-                min="0"
-                required
-            />
-        </div>
-        <div class="col-span-11 md:col-span-4">
-            <label for="${ticketTypeId}_characteristics" class="form-label">Características</label>
-            <select
-                id="${ticketTypeId}_characteristics"
-                name="ticketTypes[${ticketTypeIndex}][characteristics][]"
-                multiple
-                class="tom-select w-full"
-            >
-                ${characteristicOptionsHtml}
-            </select>
-        </div>
-        <button
-            type="button"
-            onclick="removeTicketType('${ticketTypeId}')"
-            class="text-red-500 hover:text-red-700 mt-[-4px]"
-            title="Eliminar"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg"
-                class="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 3h6a1 1 0 011 1v1H8V4a1 1 0 011-1z" />
-            </svg>
-        </button> 
-    </div>`;
+            <div id="${ticketTypeId}_wrapper" class="grid grid-cols-12 gap-2 items-start mt-2">
+                <!-- Nombre -->
+                <div class="col-span-12 md:col-span-3">
+                    <input
+                        name="ticketTypes[${ticketIndex}][name]"
+                        type="text"
+                        placeholder="Tipo de Entrada"
+                        class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-md text-sm placeholder:text-gray-500 focus:ring-0 focus:border-slate-300"
+                    />
+                </div>
+
+                <!-- Capacidad -->
+                <div class="col-span-6 md:col-span-2">
+                    <input
+                        name="ticketTypes[${ticketIndex}][capacity]"
+                        type="number"
+                        placeholder="Capacidad"
+                        class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-md text-sm placeholder:text-gray-500 focus:ring-0 focus:border-slate-300"
+                    />
+                </div>
+
+                <!-- Precio -->
+                <div class="col-span-6 md:col-span-2">
+                    <input
+                        name="ticketTypes[${ticketIndex}][price]"
+                        type="number"
+                        step="0.01"
+                        placeholder="Precio"
+                        class="w-full h-[38px] px-3 bg-white border border-slate-200 rounded-md text-sm placeholder:text-gray-500 focus:ring-0 focus:border-slate-300"
+                    />
+                </div>
+
+                <!-- Características -->
+                <div class="col-span-11 md:col-span-4">
+                    <select
+                        id="${ticketTypeId}_characteristics"
+                        name="ticketTypes[${ticketIndex}][characteristics][]"
+                        multiple
+                        class="tom-select w-full h-[38px] px-3 bg-white border border-slate-200 rounded-md text-sm focus:ring-0 focus:border-slate-300"
+                    >
+                        ${featureOptionsHtml}
+                    </select>
+                </div>
+
+                <!-- Botón eliminar -->
+                <div class="col-span-1 flex justify-end">
+                    <button
+                        type="button"
+                        onclick="removeTicketType('${ticketTypeId}')"
+                        class="p-0 text-red-500 hover:text-red-700 bg-transparent border-none shadow-none focus:outline-none"
+                        title="Eliminar"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 3h6a1 1 0 011 1v1H8V4a1 1 0 011-1z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            `;
 
             container.insertAdjacentHTML('beforeend', fieldHtml);
 
