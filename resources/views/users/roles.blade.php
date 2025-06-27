@@ -1,11 +1,11 @@
 @extends('../themes/' . $activeTheme . '/' . $activeLayout)
 
 @section('subhead')
-    <title>Usuarios</title>
+    <title>Roles</title>
 @endsection
 
 @section('subcontent')
-    <h2 class="intro-y mt-10 text-lg font-medium">Lista de usuarios</h2>
+    <h2 class="intro-y mt-10 text-lg font-medium">Roles & Permisos</h2>
     <div class="mt-5 grid grid-cols-12 gap-6">
         <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center sm:flex-nowrap">
             <!-- Formulario de búsqueda -->

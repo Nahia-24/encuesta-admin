@@ -17,21 +17,21 @@ use App\Http\Controllers\LayoutController;
 */
 
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CityController;
-use App\Http\Controllers\EventAssistantController;
-use App\Http\Controllers\EventController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\AjaxController;
-use App\Http\Controllers\CouponController;
-use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\AnswerController;
+use App\Http\Controllers\SurveyResponseController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AjusteGeneralController;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\TicketFeatureController;
 use App\Http\Controllers\PDFController;
-use App\Http\Controllers\PaypalController;
 
 Route::get('/theme-switch/{activeTheme}', [ThemeController::class, 'switch'])->name('theme.switch');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
@@ -53,25 +53,40 @@ Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEm
 Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 // Procesar el restablecimiento de contraseña
 Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
-//inscripcion de asistente
-Route::get('/event/register/{public_link}', [EventController::class, 'showPublicRegistrationForm'])->name('event.register');
-Route::post('/event/register/{public_link}', [EventController::class, 'submitPublicRegistration'])->name('event.register.submit');
-Route::get('/event-assistant/infoQr/{id}/{guid}', [EventAssistantController::class, 'infoQr'])->name('eventAssistant.infoQr');
-Route::get('/event-assistant/infoQrCoupon/{id}/{guid}', [CouponController::class, 'infoQrCoupon'])->name('coupon.infoQr');
-Route::post('/cuopon/register/{public_link}', [CouponController::class, 'submitPublicRegistration'])->name('coupon.register.submit');
-Route::get('/check-courtesy-code/{eventId}/{code}', [CouponController::class, 'checkCourtesyCode'])->name('check.courtesy.code');
-
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
+    //CRUD INICIO
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     //CRUD USUARIOS
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::get('/users/roles', [UserController::class, 'roles'])->name('users.roles');
     Route::post('/users/create', [UserController::class, 'store'])->name('users.store');
     Route::get('/users/update/{id}', [UserController::class, 'edit'])->name('users.edit');
     Route::post('/users/update', [UserController::class, 'update'])->name('users.update');
     Route::post('/check-record', [UserController::class, 'checkRecord'])->name('checkRecord');
+
+    //CRUD ENCUESTAS
+    Route::get('/surveys', [SurveyController::class, 'index'])->name('surveys.index');
+    Route::get('/surveys/create', [SurveyController::class, 'create'])->name('surveys.create');
+    Route::post('/surveys', [SurveyController::class, 'store'])->name('surveys.store');
+    // Preguntas de la encuesta (relacionadas)
+    Route::resource('surveys.questions', QuestionController::class)
+        ->shallow()
+        ->names('admin.questions');
+    // Respuestas completas por usuario (solo para visualización y eliminación)
+    Route::resource('surveys.responses', SurveyResponseController::class)
+        ->only(['index', 'show', 'destroy'])
+        ->shallow()
+        ->names('admin.responses');
+    // Rutas personalizadas para estadísticas/resúmenes de respuestas
+    Route::get('questions/{question}/summary', [AnswerController::class, 'summary'])->name('admin.answers.summary');
+    Route::get('questions/{question}/open-responses', [AnswerController::class, 'openResponses'])->name('admin.answers.open');
+    Route::get('surveys/{survey}/stats', [AnswerController::class, 'surveyStats'])->name('admin.answers.stats');
+   
+
+    //CRUD ESTADISTICAS
+    Route::get('/statistics/{survey}', [StatisticsController::class, 'show'])->name('surveys.stats');
 
     //CRUD CONFIGURACIONES
     //CRUD CONFIGURACION DEPARTAMENTO
@@ -93,25 +108,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/city/update/', [CityController::class, 'update'])->name('city.update');
     Route::get('/city/delete/{id}', [CityController::class, 'delete'])->name('city.delete');
 
-    //CRUD  CONFIGURACION TICKETFEATURE
-    Route::get('/ticketFeatures', [TicketFeatureController::class, 'index'])->name('ticketFeatures.index');
-    Route::get('/ticketFeatures/create', [TicketFeatureController::class, 'create'])->name('ticketFeatures.create');
-    Route::post('/ticketFeatures/create', [TicketFeatureController::class, 'store'])->name('ticketFeatures.store');
-    Route::get('/ticketFeatures/update/{id}', [TicketFeatureController::class, 'edit'])->name('ticketFeatures.edit');
-    Route::put('ticketFeatures/update', [TicketFeatureController::class, 'update'])->name('ticketFeatures.update');
-    Route::get('/ticketFeatures/delete/{id}', [TicketFeatureController::class, 'delete'])->name('ticketFeatures.delete');
+    //CRUD  CONFIGURACION AJUSTE GENERAL
+    Route::get('/general', [AjusteGeneralController::class, 'index'])->name('general.index');
 
-    //CRUD PDF
     Route::get('/pdf/{id}', [PDFController::class, 'buildPDF'])->name('pdf');
     Route::get('/pdf/{id}/download', [PDFController::class, 'downloadPDF'])->name('pdf.download');
 
-    //CRUD PAYPAL
-    Route::get('/paypal/{eventAssistantId}', [PaypalController::class, 'Paypal'])->name('paypal.index');
-    Route::get('/paypal/create', [PaypalController::class, 'create'])->name('paypal.create');
-    Route::post('/paypal/create', [PaypalController::class, 'store'])->name('paypal.store');
-    Route::get('/paypal/update/{id}', [PaypalController::class, 'edit'])->name('paypal.edit');
-    Route::post('/paypal/update', [PaypalController::class, 'update'])->name('paypal.update');
-    Route::get('/paypal/delete/{id}', [PaypalController::class, 'delete'])->name('paypal.delete');
 
     //CRUD AJAX
     Route::get('input-form', [AjaxController::class, 'index']);
@@ -135,71 +137,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     //REESTABLECER CONTRASEÑA
     Route::get('/profile/changePassword', [UserController::class, 'changePassword'])->name('profile.changePassword');
     Route::patch('/profile/changePassword', [UserController::class, 'changePasswordUpdate'])->name('profile.changePasswordUpdate');
-    //CRUD EVENTOS
-    Route::get('/event', [EventController::class, 'index'])->name('event.index');
-    Route::get('/event/create', [EventController::class, 'create'])->name('event.create');
-    Route::post('/event/create', [EventController::class, 'store'])->name('event.store');
-    Route::get('/event/update/{id}', [EventController::class, 'edit'])->name('event.edit');
-    Route::post('/event/update', [EventController::class, 'update'])->name('event.update');
-    Route::delete('/event/{id}', [EventController::class, 'destroy'])->name('event.destroy');
-    Route::post('/event/generatePublicLink/{id}', [EventController::class, 'generatePublicLink'])->name('event.generatePublicLink');
-    Route::get('/events/{id}/set-registration-parameters', [EventController::class, 'setRegistrationParameters'])->name('events.setRegistrationParameters');
-    Route::post('/events/{id}/store-registration-parameters', [EventController::class, 'storeRegistrationParameters'])->name('events.storeRegistrationParameters');
-    Route::get('/events/{idEvent}/payment-report', [EventController::class, 'paymentReport'])->name('events.payment-report');
-    Route::get('/events/{idEvent}/export-payments', [EventController::class, 'exportPayments'])->name('events.export-payments');
-
-    //ASISTENTS TO EVENT
-    Route::get('/assistants/{idEvent}', [EventAssistantController::class, 'index'])->name('eventAssistant.index');
-    Route::get('/assistants/{idEvent}/massAssign', [EventAssistantController::class, 'showMassAssign'])->name('eventAssistant.massAssign');
-    Route::post('/assistants/{idEvent}/massAssign', [EventAssistantController::class, 'uploadMassAssign'])->name('eventAssistant.massAssign.upload');
-    Route::get('/assistants/{idEvent}/singleAssignForm', [EventAssistantController::class, 'singleAssignForm'])->name('eventAssistant.singleAssignForm');
-    Route::post('/assistants/{idEvent}/singleAssignForm', [EventAssistantController::class, 'uploadSingleAssign'])->name('eventAssistant.singleAssign.upload');
-    Route::get('/assistants/{idEvent}/singleCreateForm', [EventAssistantController::class, 'singleCreateForm'])->name('eventAssistant.singleCreateForm');
-    Route::post('/assistants/{idEvent}/singleCreate', [EventAssistantController::class, 'singleCreateUpload'])->name('eventAssistant.singleCreate.upload');
-    Route::get('/assistants/update/{idEventAssistant}', [EventAssistantController::class, 'edit'])->name('eventAssistant.singleUpdateForm');
-    Route::put('/assistants/update/{idEventAssistant}', [EventAssistantController::class, 'singleUpdateUpload'])->name('eventAssistant.update');
-    Route::delete('/assistants/delete/{idEventAssistant}', [EventAssistantController::class, 'singleDelete'])->name('eventAssistant.singleDelete');
-    Route::get('/event-assistant/{id}/qr', [EventAssistantController::class, 'showQr'])->name('eventAssistant.qr');
-    Route::patch('/event-assistant/{id}/register-entry', [EventAssistantController::class, 'registerEntry'])->name('eventAssistant.registerEntry');
-    Route::patch('/event-assistant/{id}/reject-entry', [EventAssistantController::class, 'rejectEntry'])->name('eventAssistant.rejectEntry');
-    Route::get('/event-assistant/{id}/pdf', [EventAssistantController::class, 'generatePDF'])->name('eventAssistant.pdf');
-    Route::patch('event-assistants/{eventAssistant}/features/{feature}/consume', [EventAssistantController::class, 'consumeFeature'])->name('eventAssistant.consumeFeature');
-    Route::get('events/{id}/download-template', [EventAssistantController::class, 'downloadTemplate'])->name('eventAssistant.downloadTemplate');
-    Route::get('events/{idEvent}/specificSearch', [EventAssistantController::class, 'specificSearch'])->name('eventAssistant.specificSearch');
-    Route::get('events/{idEvent}/specificSearchUploead', [EventAssistantController::class, 'specificSearchUploead'])->name('eventAssistant.specificSearch.upload');
-    Route::get('/event-assistant/{idEvent}/export-excel', [EventAssistantController::class, 'exportExcel'])->name('eventAssistant.exportExcel');
-    Route::get('/event-assistant/{idEvent}/send-msg', [EventAssistantController::class, 'sendMsg'])->name('eventAssistant.sendMsg');
-    Route::get('/event-assistant/{id}/sendEmail', [EventAssistantController::class, 'sendEmail'])->name('eventAssistant.sendEmail');
-    Route::get('/event-assistant/{id}/payment', [EventAssistantController::class, 'payment'])->name('eventAssistant.payment');
-    Route::post('/event-assistant/payment', [EventAssistantController::class, 'paymentStore'])->name('eventAssistant.payment.store');
-    Route::get('/event-assistant/{id}/sendEmailInfoPago', [EventAssistantController::class, 'sendEmailInfoPago'])->name('eventAssistant.sendEmailInfoPago');
-    Route::get('/assistants/{idEvent}/massPayload', [EventAssistantController::class, 'showMassPayload'])->name('eventAssistant.massPayload');
-    Route::get('/assistants/{idEvent}/courtesyCode', [EventAssistantController::class, 'courtesyCode'])->name('eventAssistant.courtesyCode');
-    Route::get('/event-assistant/{id}/pdfTicket', [PDFController::class, 'getPDFEvento'])->name('eventAssistant.getPDFTicket');
-    Route::post('/generate-coupons', [EventAssistantController::class, 'generateCoupons'])->name('generateCoupons');
-    Route::get('/get-coupons/{eventId}', [EventAssistantController::class, 'getCoupons']);
-
-    //Payloads
-    Route::get('/paymentList/{idEvent}', [PaymentController::class, 'index'])->name('payments.index');
-    // Rutas para pagos
-    Route::get('/payments/create/{assistantId}', [PaymentController::class, 'create'])
-        ->name('payments.create');
-
-    Route::post('/payments/store', [PaymentController::class, 'store'])
-        ->name('payments.store');
-    Route::get('/payment/{id}', [PaymentController::class, 'generatePDF'])->name('payments.generatePDF');
-    Route::get('/event-assistant/payment/{idEvent}/export-excel', [PaymentController::class, 'exportExcel'])->name('payment.exportExcel');
-    Route::get('/event-assistant/paymentStatus/{idEvent}/export-excel', [PaymentController::class, 'exportExcelPaymentStatus'])->name('paymentStatus.exportExcel');
-    Route::get('payment/{id}/download-template', [PaymentController::class, 'downloadTemplate'])->name('payments.downloadTemplate');
-    Route::post('/assistants/{idEvent}/massPayload', [PaymentController::class, 'uploadMassPayload'])->name('eventAssistant.massPayload.upload');
-
-    //COUPON
-    Route::get('/coupon/{idEvent}', [CouponController::class, 'index'])->name('coupons.index');
-    Route::get('/coupon/{id}/pdf', [CouponController::class, 'generatePDF'])->name('coupon.pdf');
-    Route::get('/coupons/{idEvent}/pdf', [CouponController::class, 'generatePDFMasivo'])->name('coupons.pdf');
-    Route::get('/coupons/{idEvent}/xls', [CouponController::class, 'generateExcel'])->name('coupons.excel');
-    Route::delete('/coupons/{id}', [CouponController::class, 'destroy'])->name('coupon.delete');
-
     //SELECTS
     Route::get('/cities/{department}', [CityController::class, 'getCitiesByDepartment']);
 });

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\User;
+use App\Models\Survey;
+use App\Models\SurveyResponse;
 
 class HomeController extends Controller
 {
@@ -24,7 +24,10 @@ class HomeController extends Controller
      */
     public function index()
     {
-        
-        return view('home');
+        $totalSurveys = Survey::count();
+        $totalResponses = SurveyResponse::count();
+        $recentSurveys = Survey::latest()->take(5)->get();
+
+        return view('home', compact('totalSurveys', 'totalResponses', 'recentSurveys'));
     }
 }

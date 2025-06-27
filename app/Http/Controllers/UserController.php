@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Departament;
 use App\Models\City;
 use App\Models\User;
+use App\Models\Survey;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
@@ -19,20 +20,20 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = User::with('roles')
-        ->whereDoesntHave('roles', function ($q) {
-            $q->where('name', 'assistant');
-        });
+            ->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'assistant');
+            });
         // Filtrar por estado
         if ($request->has('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                ->orWhere('lastname', 'like', "%{$search}%")
-                ->orWhere('phone', 'like', "%{$search}%")
-                ->orWhereHas('roles', function ($q) use ($search) {
+                    ->orWhere('lastname', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhereHas('roles', function ($q) use ($search) {
 
-                    $q->where('name', 'like', "%{$search}%");
-                });
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             });
         }
         $usuarios = $query->paginate(10);
@@ -40,15 +41,20 @@ class UserController extends Controller
         return view('users.index', compact('usuarios'));
     }
 
-
-    public function create(){
-        $roles = Role::whereIn('name', ['organizer', 'admin', 'assistant'])->get();
-        $departments = Departament::all(); // Obtener los departamentos
-
-        return view('users.create', compact(['roles', 'departments']));
+    public function surveys()
+    {
+        return $this->hasMany(Survey::class, 'created_by');
     }
 
-    public function store(Request $request){
+    public function roles()
+    {
+        $roles = Role::whereIn('name', ['organizer', 'admin', 'assistant'])->get();
+
+        return view('users.roles', compact(['roles']));
+    }
+
+    public function store(Request $request)
+    {
         $request->validate([
             'name' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
@@ -85,17 +91,18 @@ class UserController extends Controller
 
         // Redirigir con mensaje de éxito
         return redirect()->route('users.index')->with('success', 'Usuario creado con éxito.');
-
     }
 
-    public function edit($id){
+    public function edit($id)
+    {
         $user = User::findOrFail($id);
         $roles = Role::all();
         $departments = Departament::all();
         return view('users.update', compact(['user', 'roles', 'departments']));
     }
 
-    public function update(Request $request){
+    public function update(Request $request)
+    {
         $userId = $request->id;
         $request->validate([
             'name' => 'required|string|max:255',
@@ -141,7 +148,8 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Usuario actualizado con éxito.');
     }
 
-    public function profileEdit($id){
+    public function profileEdit($id)
+    {
         $user = User::find($id);
         $roles = Role::all();
         $departments = Departament::all(); // Obtener los departamentos
@@ -149,7 +157,8 @@ class UserController extends Controller
         return view('users.update', compact(['user', 'roles', 'profileUpdate', 'departments']));
     }
 
-    public function profileUpdate(Request $request){
+    public function profileUpdate(Request $request)
+    {
         $userId = $request->id;
         $request->validate([
             'name' => 'required|string|max:255',
@@ -188,7 +197,8 @@ class UserController extends Controller
         return redirect()->route('profile.edit', ['id' => $userId])->with('success', 'Perfil actualizado con éxito.');
     }
 
-    public function RegisterUsers(){
+    public function RegisterUsers()
+    {
         $roles = Role::all();
         return view('users.register', compact(['roles']));
     }
@@ -216,7 +226,8 @@ class UserController extends Controller
         return redirect()->route('users.register')->with('success', 'Usuario Registrado satisfactoriamente');
     }
 
-    public function changePassword(){
+    public function changePassword()
+    {
         return view('users.changePassword');
     }
 
@@ -244,7 +255,8 @@ class UserController extends Controller
         return redirect()->route('profile.changePassword')->with('success', 'Contraseña actualizada correctamente.');
     }
 
-    public function resetPasswordIndex(){
+    public function resetPasswordIndex()
+    {
         return view('users.resetPassword');
     }
 
@@ -269,7 +281,8 @@ class UserController extends Controller
         return back()->withErrors(['email' => __($status)]);
     }
 
-    public function changeProfilePhoto(){
+    public function changeProfilePhoto()
+    {
         return view('users.changeProfilePhoto');
     }
 

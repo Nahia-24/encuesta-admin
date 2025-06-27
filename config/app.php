@@ -159,17 +159,16 @@ return [
         /*
          * Package Service Providers...
          */
-
+        Intervention\Image\Laravel\ServiceProvider::class,
+        Barryvdh\DomPDF\ServiceProvider::class,
         /*
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\ViewServiceProvider::class,
-        Barryvdh\DomPDF\ServiceProvider::class,
 
     ])->toArray(),
 
@@ -183,12 +182,10 @@ return [
     | the aliases are "lazy" loaded so they don't hinder performance.
     |
     */
-
     'aliases' => Facade::defaultAliases()->merge([
-        // 'Example' => App\Facades\Example::class,
         'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
-        'PayPal' => Srmklive\PayPal\Facades\PayPal::class, 
-
+        'Image' => Intervention\Image\Laravel\Facades\Image::class,
+        
     ])->toArray(),
 
 

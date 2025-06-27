@@ -10,69 +10,73 @@ class SideMenu
     public static function menu(): array
     {
         $menu = [
+            'Inicio' => [
+                'icon' => 'home',
+                'route_name' => 'home',
+                'title' => 'Inicio',
+            ],
             'usuarios' => [
                 'icon' => 'users',
-                'title' => 'Users',
+                'title' => 'Usuarios',
                 'sub_menu' => [
-                    'users.create' => [
-                        'icon' => 'activity',
-                        'route_name' => 'users.create',
-                        'title' => 'Crear usuarios'
-                    ],
                     'users.index' => [
-                        'icon' => 'activity',
+                        'icon' => 'users',
                         'route_name' => 'users.index',
                         'title' => 'Lista de Usuarios'
-                    ]
-                ]
-            ],
-            'Eventos' => [
-                'icon' => 'file-text',
-                'title' => 'Eventos',
-                'sub_menu' => [
-                    'event.create' => [
-                        'icon' => 'file-text',
-                        'route_name' => 'event.create',
-                        'title' => 'Crear evento'
                     ],
-                    'event.index' => [
-                        'icon' => 'file-text',
-                        'route_name' => 'event.index',
-                        'title' => 'Lista de Eventos'
+                    'users.roles' => [
+                        'icon' => 'users',
+                        'route_name' => 'users.roles',
+                        'title' => 'Roles & Permisos'
                     ]
                 ]
             ],
-            'Pagos' => [
+            'Encuestas' => [
                 'icon' => 'file-text',
-                'title' => 'Pagos',
+                'title' => 'Encuestas',
                 'sub_menu' => [
-
-                    'checkout.paypal' => [
+                    'surveys.create' => [
                         'icon' => 'file-text',
-                        'route_name' => 'paypal.index',
-                        'params' => ['eventAssistantId' => 1],
-                        'title' => 'Paypal'
+                        'route_name' => 'surveys.create',
+                        'title' => 'Crear Encuesta'
+                    ],
+                    'surveys.index' => [
+                        'icon' => 'file-text',
+                        'route_name' => 'surveys.index',
+                        'title' => 'Lista de Encuestas'
+                    ]
+                ]
+            ],
+            'Estatisticas' => [
+                'icon' => 'activity',
+                'title' => 'Estadisticas',
+                'sub_menu' => [
+                    'Survey.stats' => [
+                        'icon' => 'activity',
+                        'route_name' => 'surveys.stats',
+                        'params' => ['survey' => 1],
+                        'title' => 'Encuestas'
                     ]
                 ]
             ],
             'Configuraciones' => [
-                'icon' => 'file-text',
+                'icon' => 'edit',
                 'title' => 'Configuraciones',
                 'sub_menu' => [
                     'configuration.department' => [
-                        'icon' => 'file-text',
+                        'icon' => 'edit',
                         'route_name' => 'department.index',
                         'title' => 'Departamentos'
                     ],
                     'configuration.city' => [
-                        'icon' => 'file-text',
+                        'icon' => 'edit',
                         'route_name' => 'city.index',
                         'title' => 'Ciudades'
                     ],
-                    'configuration.ticketFeature' => [
-                        'icon' => 'file-text',
-                        'route_name' => 'ticketFeatures.index',
-                        'title' => 'Tickets'
+                    'configuration.general' => [
+                        'icon' => 'edit',
+                        'route_name' => 'general.index',
+                        'title' => 'Ajustes Generales'
                     ]
                 ]
             ],
